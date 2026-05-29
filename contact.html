@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contatti — H2 Collection</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <header id="nav" class="nav-dark">
+    <div class="nav-inner">
+      <nav class="nav-left">
+        <div class="nav-dropdown">
+          <a href="#" class="dropdown-trigger">Shop &#9662;</a>
+          <div class="dropdown-menu">
+            <a href="capispalla.html">Capispalla</a>
+            <a href="tops-maglie.html">Tops &amp; Maglie</a>
+            <a href="pantaloni.html">Pantaloni</a>
+          </div>
+        </div>
+        <a href="about.html">Il Marchio</a>
+      </nav>
+      <a class="wordmark" href="index.html">H2 COLLECTION</a>
+      <nav class="nav-right">
+        <a href="store-locator.html">Punti Vendita</a>
+        <a href="contact.html">Contatti</a>
+        <a href="newsletter.html" class="nav-cta">Newsletter</a>
+      </nav>
+      <button class="nav-toggle" aria-label="Apri menu">&#9776;</button>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <button class="mobile-close" aria-label="Chiudi menu">&times;</button>
+      <ul>
+        <li><a href="capispalla.html">Capispalla</a></li>
+        <li><a href="tops-maglie.html">Tops &amp; Maglie</a></li>
+        <li><a href="pantaloni.html">Pantaloni</a></li>
+        <li><a href="about.html">Il Marchio</a></li>
+        <li><a href="store-locator.html">Punti Vendita</a></li>
+        <li><a href="contact.html">Contatti</a></li>
+        <li><a href="newsletter.html">Newsletter</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="page-hero">
+    <span class="eyebrow dark">Siamo qui</span>
+    <h1>Contatti</h1>
+  </div>
+
+  <div class="contact-page">
+
+    <div class="contact-info">
+      <h2>Scrivici o<br /><em>vieni a trovarci</em></h2>
+
+      <div class="contact-detail">
+        <span class="label">Email</span>
+        <a href="mailto:info@h2collection.it">info@h2collection.it</a>
+      </div>
+
+      <div class="contact-detail">
+        <span class="label">Instagram</span>
+        <a href="https://www.instagram.com/h2collection_official" target="_blank" rel="noopener">@h2collection_official</a>
+      </div>
+
+      <div class="contact-detail">
+        <span class="label">Punti Vendita</span>
+        <p>28 negozi in tutta la Sicilia.<br /><a href="store-locator.html" style="border-bottom:1px solid #ccc;padding-bottom:1px">Trova il negozio più vicino &rarr;</a></p>
+      </div>
+
+      <div class="contact-detail">
+        <span class="label">P.IVA</span>
+        <p>05753780872</p>
+      </div>
+    </div>
+
+    <div class="contact-form-wrap">
+      <h2>Inviaci un<br /><em>messaggio</em></h2>
+      <form onsubmit="handleContactSubmit(event)">
+        <div class="form-row">
+          <div class="form-field">
+            <label for="c-nome">Nome</label>
+            <input type="text" id="c-nome" placeholder="Il tuo nome" required />
+          </div>
+          <div class="form-field">
+            <label for="c-cognome">Cognome</label>
+            <input type="text" id="c-cognome" placeholder="Il tuo cognome" required />
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="c-email">Email</label>
+          <input type="email" id="c-email" placeholder="la-tua@email.it" required />
+        </div>
+        <div class="form-field">
+          <label for="c-negozio">Negozio di riferimento</label>
+          <select id="c-negozio">
+            <option value="">— Seleziona —</option>
+            <option>Acireale</option><option>Alcamo</option><option>Augusta</option>
+            <option>Bagheria</option><option>Belpasso</option><option>Caltanissetta</option>
+            <option>Catania — Via Simili</option><option>Catania — Viale Rapisardi</option><option>Catania — Via Umberto</option>
+            <option>Gela (Corso V.E. 310)</option><option>Gela (Corso V.E. 441)</option>
+            <option>Lentini</option><option>Messina — Via dei Mille</option><option>Messina — Via Catania</option>
+            <option>Modica — Polo Commerciale</option><option>Modica — Corso Umberto</option>
+            <option>Monreale</option><option>Palermo</option><option>Partanna</option><option>Pozzallo</option>
+            <option>Ragusa</option><option>Ramacca</option><option>Riposto</option><option>Rosolini</option>
+            <option>Sciacca</option><option>Scordia</option>
+            <option>Siracusa — Via Mosco</option><option>Siracusa — Viale Zecchino</option>
+            <option>Termini Imerese</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="c-oggetto">Tipo di richiesta</label>
+          <select id="c-oggetto">
+            <option value="">— Seleziona —</option>
+            <option>Informazioni su prodotti</option>
+            <option>Assistenza ordine</option>
+            <option>Collaborazioni</option>
+            <option>Lavora con noi</option>
+            <option>Altro</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="c-msg">Messaggio</label>
+          <textarea id="c-msg" placeholder="Scrivi il tuo messaggio..." required></textarea>
+        </div>
+        <button type="submit" class="btn-outline dark">Invia messaggio</button>
+        <p class="form-feedback" id="contact-feedback" style="margin-top:1rem;font-size:0.8rem;color:var(--grey)"></p>
+      </form>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <p class="wordmark">H2 COLLECTION</p>
+      <nav class="footer-nav">
+        <a href="capispalla.html">Capispalla</a>
+        <a href="tops-maglie.html">Tops &amp; Maglie</a>
+        <a href="pantaloni.html">Pantaloni</a>
+        <a href="about.html">Il Marchio</a>
+        <a href="store-locator.html">Punti Vendita</a>
+        <a href="contact.html">Contatti</a>
+      </nav>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/h2collection_official" target="_blank" rel="noopener" aria-label="Instagram">IG</a>
+        <a href="#" aria-label="Facebook">FB</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 H2 Collection &mdash; Tutti i diritti riservati. P.IVA 05753780872</p>
+      <p>h2collection.it</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      document.getElementById('contact-feedback').textContent = 'Messaggio inviato — ti risponderemo presto. Grazie!';
+      e.target.reset();
+    }
+  </script>
+</body>
+</html>
