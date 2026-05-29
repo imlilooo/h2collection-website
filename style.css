@@ -126,16 +126,24 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
 }
 
 .wordmark {
-  font-family: var(--sans);
-  font-weight: 600;
-  font-size: 0.8rem;
-  letter-spacing: 0.3em;
   text-align: center;
-  color: var(--white);
-  transition: color 0.3s;
 }
 
-#nav.scrolled .wordmark { color: var(--black); }
+.nav-logo {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+/* Default (dark hero): show white logo, hide dark logo */
+.nav-logo-light { display: block; }
+.nav-logo-dark  { display: none; }
+
+/* Scrolled or subpage light nav: show dark logo, hide white logo */
+#nav.scrolled .nav-logo-light { display: none; }
+#nav.scrolled .nav-logo-dark  { display: block; }
+#nav.nav-dark .nav-logo-light { display: none; }
+#nav.nav-dark .nav-logo-dark  { display: block; }
 
 .nav-left, .nav-right {
   display: flex;
@@ -283,20 +291,15 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
 .hero-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(160deg, #1a1a1a 0%, #0c0c0c 60%);
-}
-
-/* Uncomment and replace src when you have a hero image:
-.hero-bg {
   background: url('images/hero.jpg') center/cover no-repeat;
 }
+
 .hero-bg::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 60%);
+  background: linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0) 100%);
 }
-*/
 
 .hero-content {
   position: relative;
@@ -438,9 +441,6 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   transform: translateX(-50%) translateY(0);
 }
 
-.product.featured .product-img .img-placeholder {
-  aspect-ratio: 2/3;
-}
 
 .product-name {
   font-size: 0.85rem;
@@ -609,11 +609,12 @@ footer {
   justify-content: space-between;
 }
 
-footer .wordmark {
-  font-size: 0.75rem;
-  letter-spacing: 0.25em;
-  color: var(--white);
-  text-align: left;
+.footer-logo {
+  height: 32px;
+  width: auto;
+  display: block;
+  filter: brightness(0) invert(1);
+  opacity: 0.8;
 }
 
 .footer-nav {
@@ -636,9 +637,8 @@ footer .wordmark {
 }
 
 .footer-social a {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
   color: rgba(255,255,255,0.35);
   transition: color 0.2s;
 }
