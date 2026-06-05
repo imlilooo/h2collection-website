@@ -822,7 +822,10 @@ a.store-addr:hover {
   color: var(--grey);
   border: 1px solid var(--mid);
   padding: 0.2rem 0.6rem;
+  transition: color 0.2s, border-color 0.2s;
 }
+.store-tag.open  { color: #2a8a50; border-color: rgba(42,138,80,0.35); }
+.store-tag.closed { color: #b04040; border-color: rgba(176,64,64,0.3); }
 
 .map-placeholder {
   background: var(--cream);
