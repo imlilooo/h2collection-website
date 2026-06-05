@@ -298,7 +298,8 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0) 100%),
+              linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 50%);
 }
 
 .hero-content {
@@ -312,11 +313,11 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
 .hero h1 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(5rem, 13vw, 13rem);
+  font-size: clamp(3.5rem, 13vw, 13rem);
   line-height: 0.92;
   letter-spacing: -0.03em;
   color: var(--white);
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   display: flex;
   flex-direction: column;
 }
@@ -664,7 +665,8 @@ footer {
   .nav-toggle { display: block; }
   .nav-inner { grid-template-columns: 1fr auto 1fr; }
 
-  .hero { padding-bottom: 4rem; }
+  .hero { padding: 0 2rem 4rem; }
+  .hero-bg { background-position: center top; }
 
   .editorial { grid-template-columns: 1fr; }
   .editorial-img { display: none; }
@@ -681,10 +683,18 @@ footer {
 
 @media (max-width: 600px) {
   .product-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-  .hero-foot { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+  .hero { padding: 0 1.25rem 3.5rem; }
+  .hero h1 { font-size: clamp(3rem, 15vw, 5rem); margin-bottom: 1.5rem; }
+  .hero-foot { flex-direction: column; align-items: flex-start; gap: 1.25rem; }
+  .hero-desc { font-size: 0.8rem; }
+  .hero-scroll-hint { display: none; }
   .collection-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
   .nl-input-wrap { flex-direction: column; }
   .nl-input-wrap button { border-left: none; border-top: 1px solid rgba(255,255,255,0.2); }
+  .newsletter-inner { padding: 4rem 1.25rem; }
+  .about-copy h2 { font-size: clamp(2rem, 8vw, 3rem); }
+  .page-hero { padding: 7rem 1.25rem 3rem; }
+  .page-hero h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
 }
 
 /* ─── Subpage shared ──────────────────────────────────────── */
