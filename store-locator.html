@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
@@ -260,10 +261,7 @@
 
     </div>
 
-    <div class="map-placeholder">
-      <p style="font-size:1.5rem;">🗺</p>
-      <p>Mappa interattiva<br />Aggiungi il tuo Google Maps embed qui</p>
-    </div>
+    <div id="store-map"></div>
   </div>
 
   <footer>
@@ -289,6 +287,86 @@
   </footer>
 
   <script src="script.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+  (function () {
+    var COORDS = {
+      'acireale':          [37.6126, 15.1651],
+      'alcamo':            [37.9815, 12.9646],
+      'augusta':           [37.2320, 15.2196],
+      'bagheria':          [38.0797, 13.5118],
+      'belpasso':          [37.5954, 14.9767],
+      'caltanissetta':     [37.4908, 14.0614],
+      'catania-simili':    [37.5122, 15.0812],
+      'catania-rapisardi': [37.5198, 15.0875],
+      'catania-umberto':   [37.5059, 15.0872],
+      'gela-310':          [37.0728, 14.2489],
+      'gela-441':          [37.0718, 14.2468],
+      'lentini':           [37.2865, 15.0005],
+      'messina-mille':     [38.1938, 15.5540],
+      'messina-catania':   [38.1830, 15.5609],
+      'modica-polo':       [36.8537, 14.7655],
+      'modica-umberto':    [36.8630, 14.7716],
+      'monreale':          [38.0822, 13.2896],
+      'palermo':           [38.1109, 13.3532],
+      'partanna':          [37.7251, 12.8911],
+      'pozzallo':          [36.7302, 14.8480],
+      'ragusa':            [36.9240, 14.7255],
+      'ramacca':           [37.3817, 14.6960],
+      'riposto':           [37.7298, 15.2061],
+      'rosolini':          [36.8248, 14.9465],
+      'sciacca':           [37.5082, 13.0798],
+      'scordia':           [37.2987, 14.8482],
+      'siracusa-mosco':    [37.0795, 15.2863],
+      'siracusa-zecchino': [37.0697, 15.2896],
+      'termini':           [37.9868, 13.6966]
+    };
+
+    var map = L.map('store-map', { scrollWheelZoom: false, zoomControl: true })
+                .setView([37.5, 14.2], 8);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    function makeIcon(active) {
+      var w = active ? 16 : 12, h = active ? 22 : 17;
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 12 17">'
+              + '<path d="M6 0C2.686 0 0 2.686 0 6c0 4.5 6 11 6 11S12 10.5 12 6c0-3.314-2.686-6-6-6z" fill="' + (active ? '#111' : '#222') + '" opacity="' + (active ? '1' : '0.75') + '"/>'
+              + '</svg>';
+      return L.divIcon({ html: svg, iconSize: [w, h], iconAnchor: [w/2, h], className: 'store-pin' });
+    }
+
+    var markers = {}, activeKey = null;
+
+    document.querySelectorAll('.store-card[data-store]').forEach(function (card) {
+      var key = card.dataset.store;
+      if (!COORDS[key]) return;
+      var m = L.marker(COORDS[key], { icon: makeIcon(false) }).addTo(map);
+      markers[key] = m;
+
+      m.on('click', function () { activate(key, false); });
+      card.addEventListener('click', function () {
+        activate(key, true);
+        map.setView(COORDS[key], 14, { animate: true });
+      });
+    });
+
+    function activate(key, fromCard) {
+      if (activeKey && markers[activeKey]) markers[activeKey].setIcon(makeIcon(false));
+      document.querySelectorAll('.store-card.active').forEach(function (el) { el.classList.remove('active'); });
+      activeKey = key;
+      if (markers[key]) markers[key].setIcon(makeIcon(true));
+      var card = document.querySelector('.store-card[data-store="' + key + '"]');
+      if (card) {
+        card.classList.add('active');
+        if (!fromCard) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  })();
+  </script>
   <script>
   (function () {
     // Minutes from midnight. Index: [Dom=0, Lun=1, Mar=2, Mer=3, Gio=4, Ven=5, Sab=6]
