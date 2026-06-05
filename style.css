@@ -798,6 +798,20 @@ footer {
   line-height: 1.6;
 }
 
+a.store-addr {
+  font-size: 0.8rem;
+  color: var(--grey);
+  line-height: 1.6;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(0,0,0,0.25);
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+a.store-addr:hover {
+  color: var(--black);
+  text-decoration-color: var(--black);
+}
+
 .store-card .store-tag {
   display: inline-block;
   margin-top: 0.6rem;
