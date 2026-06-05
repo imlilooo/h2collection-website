@@ -15,6 +15,13 @@
     .nl-optin { display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 1rem; }
     .nl-optin input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; accent-color: white; width: 14px; height: 14px; }
     .nl-optin span { font-size: 0.75rem; color: rgba(255,255,255,0.45); line-height: 1.5; }
+    .nl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .nl-field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1rem; }
+    .nl-field label { font-size: 0.7rem; color: rgba(255,255,255,0.45); letter-spacing: 0.05em; text-transform: uppercase; }
+    .nl-field input { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 0.75rem 1rem; border-radius: 2px; font-size: 0.9rem; font-family: inherit; width: 100%; box-sizing: border-box; }
+    .nl-field input::placeholder { color: rgba(255,255,255,0.25); }
+    .nl-field input:focus { outline: none; border-color: rgba(255,255,255,0.4); }
+    @media (max-width: 480px) { .nl-row { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -67,17 +74,40 @@
       <div id="success-message" class="sib-form-message-panel">Iscrizione completata — benvenuta nel club!</div>
 
       <form id="sib-form" class="nl-form" method="POST" action="https://35736c4c.sibforms.com/serve/MUIFAAv8E_64ntJ4LP6EyUT8fPuWfya9VRn2TbbNXyd-he7KjvcqoIvKi-icbRC5PLt8bZOD3h04owfqFG5T9S_jnNXLagzRSvwf3udFW_W6rz7Areu3gBG-vv88blMhGWnUTY504buecIeMVoKIhL5zBTs_yPI-OLexq1OeYCsvEoh23S4MtqAD9cZYMrBqw4Sf9EheFhgTfQWl" data-type="subscription" style="text-align:left">
-        <div class="nl-input-wrap" style="margin-bottom:1rem">
-          <input type="email" id="EMAIL" name="EMAIL" placeholder="La tua email" required aria-label="Indirizzo email" autocomplete="off" />
-          <button type="submit" form="sib-form">Iscriviti &rarr;</button>
+
+        <div class="nl-row">
+          <div class="nl-field">
+            <label for="NOME">Nome</label>
+            <input type="text" id="NOME" name="NOME" placeholder="Il tuo nome" maxlength="200" autocomplete="off" data-required="true" required />
+          </div>
+          <div class="nl-field">
+            <label for="COGNOME">Cognome</label>
+            <input type="text" id="COGNOME" name="COGNOME" placeholder="Il tuo cognome" maxlength="200" autocomplete="off" data-required="true" required />
+          </div>
         </div>
+
+        <div class="nl-field">
+          <label for="EMAIL">Indirizzo e-mail</label>
+          <input type="email" id="EMAIL" name="EMAIL" placeholder="La tua email" autocomplete="off" data-required="true" required />
+        </div>
+
+        <div class="nl-field">
+          <label for="COMPLEANNO">Data di nascita</label>
+          <input type="text" id="COMPLEANNO" name="COMPLEANNO" placeholder="GG-MM-AAAA" maxlength="200" autocomplete="off" data-type="date" pattern="^([0-2][0-9]|(3)[0-1])(-)(((0)[0-9])|((1)[0-2]))(-)\d{4}$" title="gg-mm-aaaa" data-format="dd-mm-yyyy" data-required="true" required />
+        </div>
+
         <label class="nl-optin">
-          <input type="checkbox" name="OPT_IN" value="1" required />
+          <input type="checkbox" class="input_replaced" name="OPT_IN" value="1" required />
           <span>Acconsento a ricevere la newsletter e confermo di aver letto la <a href="#" style="color:rgba(255,255,255,0.45);text-decoration:underline">Privacy Policy</a>.</span>
         </label>
-        <input type="text" name="email_address_check" value="" style="display:none">
+
+        <div style="margin-bottom:1rem">
+          <button type="submit" form="sib-form" style="width:100%">Iscriviti &rarr;</button>
+        </div>
+
+        <input type="text" name="email_address_check" value="" class="input--hidden" style="display:none">
         <input type="hidden" name="locale" value="it">
-        <p style="font-size:0.7rem;color:rgba(255,255,255,0.2);margin-top:1.5rem;line-height:1.6">
+        <p style="font-size:0.7rem;color:rgba(255,255,255,0.2);margin-top:0.5rem;line-height:1.6">
           Puoi disiscriverti in qualsiasi momento.
         </p>
       </form>
