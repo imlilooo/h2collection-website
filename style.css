@@ -291,15 +291,15 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
 .hero-bg {
   position: absolute;
   inset: 0;
-  background: url('images/hero.jpg') center/cover no-repeat;
+  background: url('images/hero.png') center/cover no-repeat;
 }
 
 .hero-bg::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0) 100%),
-              linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 50%);
+  background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 55%, rgba(0,0,0,0) 100%),
+              linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 55%);
 }
 
 .hero-content {
