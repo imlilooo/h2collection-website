@@ -136,14 +136,8 @@
 
   <script src="script.js"></script>
   <script>
-    // ── BREVO CONFIG ──────────────────────────────────────────
-    const BREVO_API_KEY  = 'YOUR_BREVO_API_KEY';  // Sostituisci con la tua API key
-    const BREVO_LIST_ID  = 46;
-    // ─────────────────────────────────────────────────────────
-
     // Date auto-format: GG-MM-AAAA
     document.getElementById('COMPLEANNO').addEventListener('input', function(e) {
-      const pos = e.target.selectionStart;
       let digits = e.target.value.replace(/\D/g, '').slice(0, 8);
       let formatted = digits;
       if (digits.length > 4) formatted = digits.slice(0,2) + '-' + digits.slice(2,4) + '-' + digits.slice(4);
@@ -151,13 +145,13 @@
       e.target.value = formatted;
     });
 
-    // Form submit → Brevo API
+    // Form submit → Netlify function → Brevo API
     document.getElementById('sib-form').addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      const btn        = this.querySelector('button[type="submit"]');
-      const successEl  = document.getElementById('success-message');
-      const errorEl    = document.getElementById('error-message');
+      const btn       = this.querySelector('button[type="submit"]');
+      const successEl = document.getElementById('success-message');
+      const errorEl   = document.getElementById('error-message');
 
       successEl.style.display = 'none';
       errorEl.style.display   = 'none';
@@ -170,22 +164,18 @@
       const dob   = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : raw;
 
       try {
-        const res = await fetch('https://api.brevo.com/v3/contacts', {
+        const res = await fetch('/.netlify/functions/subscribe', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'api-key': BREVO_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            email: document.getElementById('EMAIL').value.trim(),
-            attributes: {
-              NOME:        document.getElementById('NOME').value.trim(),
-              COGNOME:     document.getElementById('COGNOME').value.trim(),
-              COMPLEANNO:  dob
-            },
-            listIds:       [BREVO_LIST_ID],
-            updateEnabled: true
+            email:      document.getElementById('EMAIL').value.trim(),
+            nome:       document.getElementById('NOME').value.trim(),
+            cognome:    document.getElementById('COGNOME').value.trim(),
+            compleanno: dob
           })
         });
 
-        if (res.status === 201 || res.status === 204) {
+        if (res.ok) {
           successEl.style.display = 'block';
           this.reset();
         } else {
