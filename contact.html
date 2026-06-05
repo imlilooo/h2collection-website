@@ -80,7 +80,7 @@
 
     <div class="contact-form-wrap">
       <h2>Inviaci un<br /><em>messaggio</em></h2>
-      <form name="contact" action="/grazie.html" netlify netlify-honeypot="bot-field" enctype="multipart/form-data">
+      <form name="contact" method="POST" action="/grazie.html" data-netlify="true" data-netlify-honeypot="bot-field">
         <input type="hidden" name="form-name" value="contact" />
         <p style="display:none"><input name="bot-field" /></p>
         <div class="form-row">
@@ -128,10 +128,6 @@
         <div class="form-field">
           <label for="c-msg">Messaggio</label>
           <textarea id="c-msg" name="messaggio" placeholder="Scrivi il tuo messaggio..." required></textarea>
-        </div>
-        <div class="form-field">
-          <label for="c-file">Allegato <span style="font-size:0.7rem;color:var(--grey);text-transform:none;letter-spacing:0">(opzionale — max 10 MB)</span></label>
-          <input type="file" id="c-file" name="allegato" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" />
         </div>
         <button type="submit" class="btn-outline dark">Invia messaggio</button>
       </form>
