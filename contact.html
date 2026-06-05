@@ -80,7 +80,7 @@
 
     <div class="contact-form-wrap">
       <h2>Inviaci un<br /><em>messaggio</em></h2>
-      <form name="contact" netlify netlify-honeypot="bot-field" enctype="multipart/form-data" onsubmit="handleContactSubmit(event)">
+      <form name="contact" action="/grazie.html" netlify netlify-honeypot="bot-field" enctype="multipart/form-data">
         <input type="hidden" name="form-name" value="contact" />
         <p style="display:none"><input name="bot-field" /></p>
         <div class="form-row">
@@ -134,7 +134,6 @@
           <input type="file" id="c-file" name="allegato" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" />
         </div>
         <button type="submit" class="btn-outline dark">Invia messaggio</button>
-        <p class="form-feedback" id="contact-feedback" style="margin-top:1rem;font-size:0.8rem;color:var(--grey)"></p>
       </form>
     </div>
 
@@ -163,34 +162,5 @@
   </footer>
 
   <script src="script.js"></script>
-  <script>
-    async function handleContactSubmit(e) {
-      e.preventDefault();
-      const form = e.target;
-      const btn  = form.querySelector('button[type="submit"]');
-      const fb   = document.getElementById('contact-feedback');
-      btn.disabled = true;
-      btn.textContent = 'Invio in corso…';
-      fb.textContent = '';
-      try {
-        const res = await fetch('/', {
-          method: 'POST',
-          body: new FormData(form)
-        });
-        if (res.ok) {
-          fb.style.color = '#2a8a50';
-          fb.textContent = 'Messaggio inviato — ti risponderemo presto. Grazie!';
-          form.reset();
-        } else {
-          throw new Error();
-        }
-      } catch (_) {
-        fb.style.color = '#b04040';
-        fb.textContent = 'Errore nell\'invio. Riprova o scrivici direttamente a info@h2collection.it';
-      }
-      btn.disabled = false;
-      btn.textContent = 'Invia messaggio';
-    }
-  </script>
 </body>
 </html>
