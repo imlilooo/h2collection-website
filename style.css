@@ -947,6 +947,26 @@ a.store-addr:hover {
 
 .form-field textarea { resize: vertical; min-height: 140px; }
 
+.form-field input[type="file"] {
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  color: var(--grey);
+  font-size: 0.8rem;
+}
+.form-field input[type="file"]::file-selector-button {
+  background: var(--black);
+  color: #fff;
+  border: none;
+  padding: 0.35rem 0.9rem;
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  margin-right: 0.75rem;
+  transition: background 0.2s;
+}
+.form-field input[type="file"]::file-selector-button:hover { background: #333; }
+
 /* ─── Newsletter page ─────────────────────────────────────── */
 .nl-page {
   min-height: 100svh;

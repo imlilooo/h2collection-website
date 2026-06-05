@@ -80,7 +80,7 @@
 
     <div class="contact-form-wrap">
       <h2>Inviaci un<br /><em>messaggio</em></h2>
-      <form name="contact" netlify netlify-honeypot="bot-field" onsubmit="handleContactSubmit(event)">
+      <form name="contact" netlify netlify-honeypot="bot-field" enctype="multipart/form-data" onsubmit="handleContactSubmit(event)">
         <input type="hidden" name="form-name" value="contact" />
         <p style="display:none"><input name="bot-field" /></p>
         <div class="form-row">
@@ -119,7 +119,7 @@
           <select id="c-oggetto" name="oggetto">
             <option value="">— Seleziona —</option>
             <option>Informazioni su prodotti</option>
-            <option>Assistenza ordine</option>
+            <option>Assistenza generale</option>
             <option>Collaborazioni</option>
             <option>Lavora con noi</option>
             <option>Altro</option>
@@ -128,6 +128,10 @@
         <div class="form-field">
           <label for="c-msg">Messaggio</label>
           <textarea id="c-msg" name="messaggio" placeholder="Scrivi il tuo messaggio..." required></textarea>
+        </div>
+        <div class="form-field">
+          <label for="c-file">Allegato <span style="font-size:0.7rem;color:var(--grey);text-transform:none;letter-spacing:0">(opzionale — max 10 MB)</span></label>
+          <input type="file" id="c-file" name="allegato" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" />
         </div>
         <button type="submit" class="btn-outline dark">Invia messaggio</button>
         <p class="form-feedback" id="contact-feedback" style="margin-top:1rem;font-size:0.8rem;color:var(--grey)"></p>
@@ -171,8 +175,7 @@
       try {
         const res = await fetch('/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams(new FormData(form))
+          body: new FormData(form)
         });
         if (res.ok) {
           fb.style.color = '#2a8a50';
