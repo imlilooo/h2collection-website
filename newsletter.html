@@ -75,7 +75,7 @@
       <div id="error-message" class="sib-form-message-panel">La sottoscrizione non è riuscita. Riprova.</div>
       <div id="success-message" class="sib-form-message-panel">Iscrizione completata — benvenuta nel club!</div>
 
-      <form id="sib-form" class="nl-form" method="POST" action="https://35736c4c.sibforms.com/serve/MUIFAAv8E_64ntJ4LP6EyUT8fPuWfya9VRn2TbbNXyd-he7KjvcqoIvKi-icbRC5PLt8bZOD3h04owfqFG5T9S_jnNXLagzRSvwf3udFW_W6rz7Areu3gBG-vv88blMhGWnUTY504buecIeMVoKIhL5zBTs_yPI-OLexq1OeYCsvEoh23S4MtqAD9cZYMrBqw4Sf9EheFhgTfQWl" data-type="subscription" style="text-align:left">
+      <form id="sib-form" class="nl-form" style="text-align:left">
 
         <div class="nl-row">
           <div class="nl-field">
@@ -105,8 +105,6 @@
 
         <button type="submit" class="nl-btn">Iscriviti &rarr;</button>
 
-        <input type="text" name="email_address_check" value="" class="input--hidden" style="display:none">
-        <input type="hidden" name="locale" value="it">
         <p style="font-size:0.7rem;color:rgba(255,255,255,0.2);margin-top:0.5rem;line-height:1.6">
           Puoi disiscriverti in qualsiasi momento.
         </p>
@@ -138,26 +136,68 @@
 
   <script src="script.js"></script>
   <script>
+    // ── BREVO CONFIG ──────────────────────────────────────────
+    const BREVO_API_KEY  = 'YOUR_BREVO_API_KEY';  // Sostituisci con la tua API key
+    const BREVO_LIST_ID  = 46;
+    // ─────────────────────────────────────────────────────────
+
+    // Date auto-format: GG-MM-AAAA
     document.getElementById('COMPLEANNO').addEventListener('input', function(e) {
-      let v = e.target.value.replace(/\D/g, '');
-      if (v.length > 2) v = v.slice(0,2) + '-' + v.slice(2);
-      if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5);
-      e.target.value = v.slice(0,10);
+      const pos = e.target.selectionStart;
+      let digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+      let formatted = digits;
+      if (digits.length > 4) formatted = digits.slice(0,2) + '-' + digits.slice(2,4) + '-' + digits.slice(4);
+      else if (digits.length > 2) formatted = digits.slice(0,2) + '-' + digits.slice(2);
+      e.target.value = formatted;
+    });
+
+    // Form submit → Brevo API
+    document.getElementById('sib-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const btn        = this.querySelector('button[type="submit"]');
+      const successEl  = document.getElementById('success-message');
+      const errorEl    = document.getElementById('error-message');
+
+      successEl.style.display = 'none';
+      errorEl.style.display   = 'none';
+      btn.disabled             = true;
+      btn.textContent          = 'Invio in corso…';
+
+      // Convert GG-MM-AAAA → YYYY-MM-DD for Brevo API
+      const raw   = document.getElementById('COMPLEANNO').value;
+      const parts = raw.split('-');
+      const dob   = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : raw;
+
+      try {
+        const res = await fetch('https://api.brevo.com/v3/contacts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'api-key': BREVO_API_KEY },
+          body: JSON.stringify({
+            email: document.getElementById('EMAIL').value.trim(),
+            attributes: {
+              NOME:        document.getElementById('NOME').value.trim(),
+              COGNOME:     document.getElementById('COGNOME').value.trim(),
+              COMPLEANNO:  dob
+            },
+            listIds:       [BREVO_LIST_ID],
+            updateEnabled: true
+          })
+        });
+
+        if (res.status === 201 || res.status === 204) {
+          successEl.style.display = 'block';
+          this.reset();
+        } else {
+          errorEl.style.display = 'block';
+        }
+      } catch (_) {
+        errorEl.style.display = 'block';
+      }
+
+      btn.disabled    = false;
+      btn.textContent = 'Iscriviti →';
     });
   </script>
-  <script>
-    window.REQUIRED_CODE_ERROR_MESSAGE = 'Seleziona un prefisso';
-    window.LOCALE = 'it';
-    window.EMAIL_INVALID_MESSAGE = 'Inserisci un indirizzo email valido.';
-    window.SMS_INVALID_MESSAGE = 'Numero non valido.';
-    window.REQUIRED_ERROR_MESSAGE = 'Questo campo è obbligatorio.';
-    window.GENERIC_INVALID_MESSAGE = 'Informazione non valida.';
-    window.INVALID_NUMBER = 'Numero non valido.';
-    window.INVALID_DATE = 'Data non valida.';
-    window.REQUIRED_MULTISELECT_MESSAGE = 'Seleziona almeno un\'opzione.';
-    window.translation = { common: { selectedList: '{quantity} lista selezionata', selectedLists: '{quantity} liste selezionate', selectedOption: '{quantity} selezionata', selectedOptions: '{quantity} selezionate' } };
-    var AUTOHIDE = Boolean(0);
-  </script>
-  <script defer src="https://sibforms.com/forms/end-form/build/main.js"></script>
 </body>
 </html>
