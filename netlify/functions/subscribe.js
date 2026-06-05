@@ -10,9 +10,9 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
-  const { email, nome, cognome, compleanno } = data;
+  const { email, nome, cognome, compleanno, citta } = data;
 
-  if (!email || !nome || !cognome || !compleanno) {
+  if (!email || !nome || !cognome || !compleanno || !citta) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Tutti i campi sono obbligatori.' }) };
   }
 
@@ -28,7 +28,8 @@ exports.handler = async (event) => {
         attributes: {
           NOME:       nome,
           COGNOME:    cognome,
-          COMPLEANNO: compleanno
+          COMPLEANNO: compleanno,
+          CITTA:      citta
         },
         listIds:       [46],
         updateEnabled: true

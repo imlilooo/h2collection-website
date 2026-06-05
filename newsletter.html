@@ -23,6 +23,9 @@
     .nl-field input:focus { outline: none; border-color: rgba(255,255,255,0.4); }
     .nl-btn { display: block; width: 100%; background: #fff; color: #000; border: none; padding: 1.1rem 2rem; font-family: inherit; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; margin-bottom: 1rem; transition: background 0.2s; }
     .nl-btn:hover { background: rgba(255,255,255,0.85); }
+    .nl-field select { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 0.85rem 1rem; border-radius: 2px; font-size: 0.9rem; font-family: inherit; width: 100%; box-sizing: border-box; appearance: none; cursor: pointer; }
+    .nl-field select option { background: #111; color: #fff; }
+    .nl-field select:focus { outline: none; border-color: rgba(255,255,255,0.4); }
     @media (max-width: 480px) { .nl-row { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -98,6 +101,36 @@
           <input type="text" id="COMPLEANNO" name="COMPLEANNO" placeholder="GG-MM-AAAA" maxlength="10" autocomplete="off" data-type="date" pattern="^([0-2][0-9]|(3)[0-1])(-)(((0)[0-9])|((1)[0-2]))(-)\d{4}$" title="gg-mm-aaaa" data-format="dd-mm-yyyy" data-required="true" required />
         </div>
 
+        <div class="nl-field">
+          <label for="CITTA">A quale negozio sei interessata/o?</label>
+          <select id="CITTA" name="CITTA" required>
+            <option value="" disabled selected>Seleziona la tua città</option>
+            <option>Acireale</option>
+            <option>Alcamo</option>
+            <option>Augusta</option>
+            <option>Bagheria</option>
+            <option>Belpasso</option>
+            <option>Caltanissetta</option>
+            <option>Catania</option>
+            <option>Gela</option>
+            <option>Lentini</option>
+            <option>Messina</option>
+            <option>Modica</option>
+            <option>Monreale</option>
+            <option>Palermo</option>
+            <option>Partanna</option>
+            <option>Pozzallo</option>
+            <option>Ragusa</option>
+            <option>Ramacca</option>
+            <option>Riposto</option>
+            <option>Rosolini</option>
+            <option>Sciacca</option>
+            <option>Scordia</option>
+            <option>Siracusa</option>
+            <option>Termini Imerese</option>
+          </select>
+        </div>
+
         <label class="nl-optin">
           <input type="checkbox" name="OPT_IN" value="1" required />
           <span>Acconsento a ricevere la newsletter e confermo di aver letto la <a href="#" style="color:rgba(255,255,255,0.45);text-decoration:underline">Privacy Policy</a>.</span>
@@ -171,7 +204,8 @@
             email:      document.getElementById('EMAIL').value.trim(),
             nome:       document.getElementById('NOME').value.trim(),
             cognome:    document.getElementById('COGNOME').value.trim(),
-            compleanno: dob
+            compleanno: dob,
+            citta:      document.getElementById('CITTA').value
           })
         });
 
