@@ -18,9 +18,11 @@
     .nl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
     .nl-field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1rem; }
     .nl-field label { font-size: 0.7rem; color: rgba(255,255,255,0.45); letter-spacing: 0.05em; text-transform: uppercase; }
-    .nl-field input { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 0.75rem 1rem; border-radius: 2px; font-size: 0.9rem; font-family: inherit; width: 100%; box-sizing: border-box; }
+    .nl-field input { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 0.85rem 1rem; border-radius: 2px; font-size: 0.9rem; font-family: inherit; width: 100%; box-sizing: border-box; }
     .nl-field input::placeholder { color: rgba(255,255,255,0.25); }
     .nl-field input:focus { outline: none; border-color: rgba(255,255,255,0.4); }
+    .nl-btn { display: block; width: 100%; background: #fff; color: #000; border: none; padding: 1.1rem 2rem; font-family: inherit; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; margin-bottom: 1rem; transition: background 0.2s; }
+    .nl-btn:hover { background: rgba(255,255,255,0.85); }
     @media (max-width: 480px) { .nl-row { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -93,17 +95,15 @@
 
         <div class="nl-field">
           <label for="COMPLEANNO">Data di nascita</label>
-          <input type="text" id="COMPLEANNO" name="COMPLEANNO" placeholder="GG-MM-AAAA" maxlength="200" autocomplete="off" data-type="date" pattern="^([0-2][0-9]|(3)[0-1])(-)(((0)[0-9])|((1)[0-2]))(-)\d{4}$" title="gg-mm-aaaa" data-format="dd-mm-yyyy" data-required="true" required />
+          <input type="text" id="COMPLEANNO" name="COMPLEANNO" placeholder="GG-MM-AAAA" maxlength="10" autocomplete="off" data-type="date" pattern="^([0-2][0-9]|(3)[0-1])(-)(((0)[0-9])|((1)[0-2]))(-)\d{4}$" title="gg-mm-aaaa" data-format="dd-mm-yyyy" data-required="true" required />
         </div>
 
         <label class="nl-optin">
-          <input type="checkbox" class="input_replaced" name="OPT_IN" value="1" required />
+          <input type="checkbox" name="OPT_IN" value="1" required />
           <span>Acconsento a ricevere la newsletter e confermo di aver letto la <a href="#" style="color:rgba(255,255,255,0.45);text-decoration:underline">Privacy Policy</a>.</span>
         </label>
 
-        <div class="nl-input-wrap" style="margin-bottom:1rem">
-          <button type="submit" form="sib-form" style="width:100%;border-left:none">Iscriviti &rarr;</button>
-        </div>
+        <button type="submit" class="nl-btn">Iscriviti &rarr;</button>
 
         <input type="text" name="email_address_check" value="" class="input--hidden" style="display:none">
         <input type="hidden" name="locale" value="it">
@@ -137,6 +137,14 @@
   </footer>
 
   <script src="script.js"></script>
+  <script>
+    document.getElementById('COMPLEANNO').addEventListener('input', function(e) {
+      let v = e.target.value.replace(/\D/g, '');
+      if (v.length > 2) v = v.slice(0,2) + '-' + v.slice(2);
+      if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5);
+      e.target.value = v.slice(0,10);
+    });
+  </script>
   <script>
     window.REQUIRED_CODE_ERROR_MESSAGE = 'Seleziona un prefisso';
     window.LOCALE = 'it';
