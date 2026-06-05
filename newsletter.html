@@ -8,6 +8,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    .sib-form-message-panel { display: none; }
+    #error-message   { background: rgba(255,80,80,0.12); border: 1px solid rgba(255,80,80,0.35); border-radius: 4px; padding: 0.75rem 1rem; margin-bottom: 1rem; color: rgba(255,200,200,0.9); font-size: 0.85rem; }
+    #success-message { background: rgba(80,200,120,0.12); border: 1px solid rgba(80,200,120,0.35); border-radius: 4px; padding: 0.75rem 1rem; margin-bottom: 1rem; color: rgba(200,255,220,0.9); font-size: 0.85rem; }
+    .nl-optin { display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 1rem; }
+    .nl-optin input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; accent-color: white; width: 14px; height: 14px; }
+    .nl-optin span { font-size: 0.75rem; color: rgba(255,255,255,0.45); line-height: 1.5; }
+  </style>
 </head>
 <body>
 
@@ -55,14 +63,22 @@
       <h1>Iscriviti &amp;<br /><em>risparmia 10€</em></h1>
       <p>Iscriviti alla nostra newsletter e ricevi subito un buono sconto di <strong style="color:rgba(255,255,255,0.7)">€10</strong> sul tuo primo acquisto. Sarai il primo a sapere di nuove collezioni, offerte esclusive ed eventi in negozio.</p>
 
-      <form class="nl-form" onsubmit="handleSubmit(event)" style="text-align:left">
+      <div id="error-message" class="sib-form-message-panel">La sottoscrizione non è riuscita. Riprova.</div>
+      <div id="success-message" class="sib-form-message-panel">Iscrizione completata — benvenuta nel club!</div>
+
+      <form id="sib-form" class="nl-form" method="POST" action="https://35736c4c.sibforms.com/serve/MUIFAAv8E_64ntJ4LP6EyUT8fPuWfya9VRn2TbbNXyd-he7KjvcqoIvKi-icbRC5PLt8bZOD3h04owfqFG5T9S_jnNXLagzRSvwf3udFW_W6rz7Areu3gBG-vv88blMhGWnUTY504buecIeMVoKIhL5zBTs_yPI-OLexq1OeYCsvEoh23S4MtqAD9cZYMrBqw4Sf9EheFhgTfQWl" data-type="subscription" style="text-align:left">
         <div class="nl-input-wrap" style="margin-bottom:1rem">
-          <input type="email" id="nl-email" placeholder="La tua email" required aria-label="Indirizzo email" />
-          <button type="submit">Iscriviti &rarr;</button>
+          <input type="email" id="EMAIL" name="EMAIL" placeholder="La tua email" required aria-label="Indirizzo email" autocomplete="off" />
+          <button type="submit" form="sib-form">Iscriviti &rarr;</button>
         </div>
-        <p class="nl-feedback" id="form-feedback"></p>
+        <label class="nl-optin">
+          <input type="checkbox" name="OPT_IN" value="1" required />
+          <span>Acconsento a ricevere la newsletter e confermo di aver letto la <a href="#" style="color:rgba(255,255,255,0.45);text-decoration:underline">Privacy Policy</a>.</span>
+        </label>
+        <input type="text" name="email_address_check" value="" style="display:none">
+        <input type="hidden" name="locale" value="it">
         <p style="font-size:0.7rem;color:rgba(255,255,255,0.2);margin-top:1.5rem;line-height:1.6">
-          Iscrivendoti accetti la nostra <a href="#" style="color:rgba(255,255,255,0.35);text-decoration:underline">Privacy Policy</a>. Puoi disiscriverti in qualsiasi momento.
+          Puoi disiscriverti in qualsiasi momento.
         </p>
       </form>
     </div>
@@ -91,5 +107,19 @@
   </footer>
 
   <script src="script.js"></script>
+  <script>
+    window.REQUIRED_CODE_ERROR_MESSAGE = 'Seleziona un prefisso';
+    window.LOCALE = 'it';
+    window.EMAIL_INVALID_MESSAGE = 'Inserisci un indirizzo email valido.';
+    window.SMS_INVALID_MESSAGE = 'Numero non valido.';
+    window.REQUIRED_ERROR_MESSAGE = 'Questo campo è obbligatorio.';
+    window.GENERIC_INVALID_MESSAGE = 'Informazione non valida.';
+    window.INVALID_NUMBER = 'Numero non valido.';
+    window.INVALID_DATE = 'Data non valida.';
+    window.REQUIRED_MULTISELECT_MESSAGE = 'Seleziona almeno un\'opzione.';
+    window.translation = { common: { selectedList: '{quantity} lista selezionata', selectedLists: '{quantity} liste selezionate', selectedOption: '{quantity} selezionata', selectedOptions: '{quantity} selezionate' } };
+    var AUTOHIDE = Boolean(0);
+  </script>
+  <script defer src="https://sibforms.com/forms/end-form/build/main.js"></script>
 </body>
 </html>
