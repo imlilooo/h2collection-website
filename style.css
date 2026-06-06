@@ -924,7 +924,7 @@ a.store-addr:hover {
 
 .about-full-img {
   width: 100%;
-  aspect-ratio: 21/9;
+  aspect-ratio: 16/9;
   background: var(--cream);
   margin-bottom: 6rem;
 }
