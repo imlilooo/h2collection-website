@@ -333,15 +333,16 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   line-height: 1;
 }
 .saldi-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 600;
+  font-family: 'Bodoni Moda', serif;
+  font-weight: 700;
+  font-style: normal;
   font-size: clamp(3rem, 10vw, 10rem);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--white);
   line-height: 0.9;
 }
 .saldi-estivi {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Bodoni Moda', serif;
   font-style: italic;
   font-weight: 400;
   font-size: clamp(1.8rem, 5vw, 5rem);
@@ -350,8 +351,9 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   margin-left: 0.1em;
 }
 .saldi-percent {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 600;
+  font-family: 'Bodoni Moda', serif;
+  font-weight: 700;
+  font-style: normal;
   font-size: clamp(3rem, 10vw, 10rem);
   letter-spacing: 0.02em;
   color: var(--white);
