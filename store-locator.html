@@ -50,13 +50,6 @@
   <div class="stores-layout">
     <div class="store-list">
 
-      <div class="store-card" data-store="acireale">
-        <h3>Acireale</h3>
-        <a href="https://www.google.com/maps/search/?api=1&query=Corso%20Sicilia%205%2C%20Acireale%20CT" target="_blank" rel="noopener" class="store-addr">Corso Sicilia 5/6/7 — 95024 Acireale (CT)</a>
-        <p>Lun–Sab 9:00–13:00 / 16:00–20:00 &nbsp;|&nbsp; Dom 10:00–13:00 / 17:00–20:00</p>
-        <span class="store-tag">Aperto</span>
-      </div>
-
       <div class="store-card" data-store="alcamo">
         <h3>Alcamo</h3>
         <a href="https://www.google.com/maps/search/?api=1&query=Corso%206%20Aprile%20237%2C%20Alcamo%20TP" target="_blank" rel="noopener" class="store-addr">Corso 6 Aprile 237 — 91011 Alcamo (TP)</a>
@@ -280,7 +273,6 @@
   <script>
   (function () {
     var COORDS = {
-      'acireale':          [37.6126, 15.1651],
       'alcamo':            [37.9815, 12.9646],
       'augusta':           [37.2320, 15.2196],
       'bagheria':          [38.0797, 13.5118],
@@ -361,7 +353,6 @@
     // Minutes from midnight. Index: [Dom=0, Lun=1, Mar=2, Mer=3, Gio=4, Ven=5, Sab=6]
     // Each day: [[open,close],...] or [] if closed. null = hours unknown.
     var H = {
-      'acireale':          [[[600,780],[1020,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]]],
       'alcamo':            [[],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]]],
       'augusta':           [[],[[540,780],[990,1200]],[[540,780],[990,1200]],[[540,780],[990,1200]],[[540,780],[990,1200]],[[540,780],[990,1200]],[[540,780],[990,1200]]],
       'bagheria':          [[],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]],[[540,780],[960,1200]]],
