@@ -355,7 +355,7 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   text-transform: uppercase;
   color: rgba(255,255,255,0.7);
     margin-top: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2.5rem;
 }
 
 .hero-foot {
