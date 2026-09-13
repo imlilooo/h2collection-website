@@ -326,6 +326,7 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
 .h1-line.italic { font-style: italic; color: rgba(255,255,255,0.55); }
 
 .saldi-title-cursive {
+  display: block;
   font-family: 'Playfair Display', serif;
   font-style: italic;
   font-weight: 400;
@@ -335,6 +336,7 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   line-height: 1;
 }
 .saldi-percent {
+  display: block;
   font-family: 'Agrandir', 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
   font-style: normal;
