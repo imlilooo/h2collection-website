@@ -936,8 +936,8 @@ a.store-addr:hover {
   position: sticky;
   top: 6rem;
   background: var(--cream);
+  filter: grayscale(100%) contrast(1.05);
 }
-
 .store-pin { background: none !important; border: none !important; }
 
 .store-card.active {
