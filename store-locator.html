@@ -306,11 +306,11 @@
     var map = L.map('store-map', { scrollWheelZoom: false, zoomControl: true })
                 .setView([37.5, 14.2], 8);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 19
-    }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  subdomains: 'abc',
+  maxZoom: 19
+}).addTo(map);
 
     function makeIcon(active) {
       var w = active ? 16 : 12, h = active ? 22 : 17;
