@@ -335,7 +335,8 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   color: var(--white);
   line-height: 1;
 }
-.saldi-title-cursive em { font-style: italic; color: rgba(255,255,255,0.6); }
+.saldi-title-cursive { color: rgba(255,255,255,0.6) !important; }
+.saldi-title-cursive em { font-style: italic; }
 .saldi-percent {
   display: block;
   font-family: 'Inter', sans-serif;
@@ -348,6 +349,7 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   margin-top: 0.3rem;
 }
 .saldi-sub {
+  display: block;
   font-family: 'Inter', sans-serif;
   font-size: 0.75rem;
   font-weight: 500;
@@ -368,7 +370,6 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   font-size: 0.85rem;
   color: rgba(255,255,255,0.45);
   line-height: 1.7;
-  max-width: 22ch;
 }
 
 .hero-scroll-hint {
