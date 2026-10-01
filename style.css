@@ -418,7 +418,7 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
 
 /* ─── Collection ──────────────────────────────────────────── */
 .collection {
-  padding: 7rem 2.5rem;
+  padding: 5rem 2.5rem;
   max-width: 1440px;
   margin: 0 auto;
 }
@@ -427,10 +427,10 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
-.collection-title h2 { margin-top: 0.4rem; font-family: 'Inter', sans-serif; font-weight: 400; letter-spacing: -0.02em; }
+.collection-title h2 { margin-top: 0; font-size: clamp(1.9rem, 3vw, 2.6rem); }
 
 .product-grid {
   display: grid;
