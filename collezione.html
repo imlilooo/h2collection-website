@@ -54,7 +54,7 @@
       <button class="filter-btn" data-filter="pantaloni">Pantaloni</button>
       <button class="filter-btn" data-filter="capispalla">Capispalla</button>
       <button class="filter-btn" data-filter="top">Top</button>
-      <button class="filter-btn" data-filter="accessori">Accessori</button>
+      <button class="filter-btn" data-filter="maglieria">Maglieria</button>
       <button class="filter-btn" data-filter="abiti">Abiti</button>
     </div>
 
@@ -68,10 +68,6 @@
       <article class="product" data-cat="abiti">
         <div class="product-img"><img src="images/products/Maxi_dress_floreale.png" alt="Maxi dress floreale" loading="lazy" /></div>
         <div class="product-meta"><p class="product-name">Maxi dress floreale</p></div>
-      </article>
-      <article class="product" data-cat="abiti">
-        <div class="product-img"><img src="images/products/Tuta_set.png" alt="Tuta set" loading="lazy" /></div>
-        <div class="product-meta"><p class="product-name">Tuta set</p></div>
       </article>
 
       <!-- PANTALONI -->
@@ -102,26 +98,32 @@
         <div class="product-meta"><p class="product-name">Completo in velluto a costine</p></div>
       </article>
 
-      <!-- TOP -->
-      <article class="product" data-cat="top">
+      <!-- MAGLIERIA (anche in Top) -->
+      <article class="product" data-cat="maglieria top">
         <div class="product-img"><img src="images/products/Cardigan_con_bottoni_rivestiti.png" alt="Cardigan con bottoni rivestiti" loading="lazy" /></div>
         <div class="product-meta"><p class="product-name">Cardigan con bottoni rivestiti</p></div>
       </article>
-      <article class="product" data-cat="top">
+      <article class="product" data-cat="maglieria top">
         <div class="product-img"><img src="images/products/Cardigan_con_tasche.png" alt="Cardigan con tasche" loading="lazy" /></div>
         <div class="product-meta"><p class="product-name">Cardigan con tasche</p></div>
       </article>
-      <article class="product" data-cat="top">
+      <article class="product" data-cat="maglieria top">
         <div class="product-img"><img src="images/products/Maglione_con_manica_scesa.png" alt="Maglione con manica scesa" loading="lazy" /></div>
         <div class="product-meta"><p class="product-name">Maglione con manica scesa</p></div>
       </article>
-      <article class="product" data-cat="top">
+      <article class="product" data-cat="maglieria top">
         <div class="product-img"><img src="images/products/Polo_in_maglia.png" alt="Polo in maglia" loading="lazy" /></div>
         <div class="product-meta"><p class="product-name">Polo in maglia</p></div>
       </article>
-      <article class="product" data-cat="top">
+      <article class="product" data-cat="maglieria top">
         <div class="product-img"><img src="images/products/Top_in_maglia_con_bottoncini.png" alt="Top in maglia con bottoncini" loading="lazy" /></div>
         <div class="product-meta"><p class="product-name">Top in maglia con bottoncini</p></div>
+      </article>
+
+      <!-- SET (Pantaloni + Top) -->
+      <article class="product" data-cat="pantaloni top">
+        <div class="product-img"><img src="images/products/Tuta_set.png" alt="Tuta set" loading="lazy" /></div>
+        <div class="product-meta"><p class="product-name">Tuta set</p></div>
       </article>
 
     </div>
@@ -171,7 +173,7 @@
     function applyFilter(f) {
       var count = 0;
       cards.forEach(function (c) {
-        var show = f === 'all' || c.dataset.cat === f;
+        var show = f === 'all' || c.dataset.cat.split(' ').indexOf(f) !== -1;
         c.style.display = show ? '' : 'none';
         if (show) count++;
       });
