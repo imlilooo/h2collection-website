@@ -8,3 +8,24 @@
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Headers = "Content-Type"
     Access-Control-Allow-Methods = "POST, OPTIONS"
+
+# Vecchie pagine di categoria -> filtri della pagina La Collezione
+[[redirects]]
+  from = "/capispalla.html"
+  to = "/collezione.html#capispalla"
+  status = 301
+
+[[redirects]]
+  from = "/pantaloni.html"
+  to = "/collezione.html#pantaloni"
+  status = 301
+
+[[redirects]]
+  from = "/tops-maglie.html"
+  to = "/collezione.html#top"
+  status = 301
+
+[[redirects]]
+  from = "/maglieria.html"
+  to = "/collezione.html#maglieria"
+  status = 301
