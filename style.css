@@ -327,18 +327,19 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
 
 .saldi-title-cursive {
   display: block;
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: clamp(2.5rem, 8vw, 6.5rem);
-  letter-spacing: -0.01em;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 300;
+  font-size: clamp(1.4rem, 3.5vw, 2.6rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--white);
   line-height: 1;
 }
 .saldi-percent {
   display: block;
-  font-family: 'Agrandir', 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
   font-style: normal;
   font-size: clamp(3.5rem, 11vw, 11rem);
   letter-spacing: -0.01em;
@@ -347,8 +348,7 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   margin-top: 0.3rem;
 }
 .saldi-sub {
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-stretch: condensed;
+  font-family: 'Inter', sans-serif;
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.2em;
@@ -428,8 +428,7 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   margin-bottom: 3rem;
 }
 
-.collection-title h2 { margin-top: 0.4rem; }
-.h2-num { font-family: 'Inter', sans-serif; font-style: normal; font-weight: 600; letter-spacing: -0.03em; }
+.collection-title h2 { margin-top: 0.4rem; font-family: 'Inter', sans-serif; font-weight: 400; letter-spacing: -0.02em; }
 
 .product-grid {
   display: grid;
