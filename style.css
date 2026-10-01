@@ -714,7 +714,7 @@ footer {
   .nav-inner { grid-template-columns: 1fr auto 1fr; }
 
   .hero { padding: 0 2rem 4rem; }
-  .hero-bg { background-position: center top; }
+  .hero-bg { background-position: 78% top; }
 
   .editorial { grid-template-columns: 1fr; }
   .editorial-img { display: none; }
