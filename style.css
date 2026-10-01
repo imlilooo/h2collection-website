@@ -327,15 +327,15 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
 
 .saldi-title-cursive {
   display: block;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--serif);
   font-style: normal;
-  font-weight: 300;
-  font-size: clamp(1.4rem, 3.5vw, 2.6rem);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-weight: 400;
+  font-size: clamp(2.8rem, 6.5vw, 5.8rem);
+  letter-spacing: -0.02em;
   color: var(--white);
   line-height: 1;
 }
+.saldi-title-cursive em { font-style: italic; color: rgba(255,255,255,0.6); }
 .saldi-percent {
   display: block;
   font-family: 'Inter', sans-serif;
