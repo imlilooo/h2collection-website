@@ -348,7 +348,7 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
   line-height: 0.9;
   margin-top: 0.3rem;
 }
-.saldi-percent .pct { font-size: 0.45em; font-weight: 500; margin-left: 0.05em; }
+.saldi-percent .pct { font-size: 0.45em; font-weight: 500; margin-left: 0.05em; position: relative; top: -0.48em; }
 .saldi-sub {
   display: block;
   font-family: 'Inter', sans-serif;
