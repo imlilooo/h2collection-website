@@ -429,6 +429,7 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
 }
 
 .collection-title h2 { margin-top: 0.4rem; }
+.h2-num { font-family: 'Inter', sans-serif; font-style: normal; font-weight: 600; letter-spacing: -0.03em; }
 
 .product-grid {
   display: grid;
