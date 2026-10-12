@@ -31,7 +31,7 @@ exports.handler = async (event) => {
           COMPLEANNO: compleanno,
           CITTA:      citta
         },
-        listIds:       [46],
+        listIds:       [46, 83],
         updateEnabled: true
       })
     });
