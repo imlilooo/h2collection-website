@@ -1121,3 +1121,86 @@ a.store-addr:hover {
   .page-hero { padding-top: 8rem; }
   .form-row { grid-template-columns: 1fr; }
 }
+
+/* ─── Collezione: foto alternativa al passaggio del mouse ─── */
+.coll-grid a.product { display: block; color: inherit; text-decoration: none; }
+.coll-grid .product-img { position: relative; }
+.coll-grid .product-img .img-alt {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+@media (hover: hover) {
+  .coll-grid .product.has-alt:hover .product-img .img-alt { opacity: 1; }
+}
+
+/* ─── Pagina prodotto ─────────────────────────────────────── */
+.pdp {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 9rem 2.5rem 8rem;
+}
+.pdp-back {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--grey);
+  text-decoration: none;
+  margin-bottom: 2rem;
+}
+.pdp-back:hover { color: var(--black); }
+.pdp-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 4rem;
+  align-items: start;
+}
+.pdp-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.pdp-gallery.single { grid-template-columns: minmax(0, 0.5fr); justify-content: start; }
+.pdp-img {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--cream);
+}
+.pdp-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+.pdp-info { position: sticky; top: 8rem; }
+.pdp-info h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 3vw, 2.6rem);
+  line-height: 1.15;
+  margin: 0.75rem 0 1.5rem;
+}
+.pdp-note { color: var(--grey); font-size: 0.9rem; margin-bottom: 2rem; }
+.pdp-dots { display: none; }
+
+@media (max-width: 900px) {
+  .pdp { padding: 7rem 1rem 5rem; }
+  .pdp-layout { grid-template-columns: 1fr; gap: 2rem; }
+  .pdp-info { position: static; }
+  .pdp-gallery,
+  .pdp-gallery.single {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 0;
+    scrollbar-width: none;
+  }
+  .pdp-gallery::-webkit-scrollbar { display: none; }
+  .pdp-gallery .pdp-img { flex: 0 0 100%; scroll-snap-align: start; }
+  .pdp-dots { display: flex; justify-content: center; gap: 0.5rem; margin-top: 0.75rem; }
+  .pdp-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(0,0,0,0.2); }
+  .pdp-dots span.on { background: var(--black); }
+}
