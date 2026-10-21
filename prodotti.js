@@ -17,7 +17,7 @@ var PRODOTTI = [
   { id: "tailleur", nome: "Tailleur", categorie: "tailleurs", foto: ["Tailleur.webp"] },
   { id: "completo-in-velluto-a-costine", nome: "Completo in velluto a costine", categorie: "tailleurs", foto: ["Completo_in_velluto_a_costine.webp"] },
   { id: "cardigan-con-bottoni-rivestiti", nome: "Cardigan con bottoni rivestiti", categorie: "maglieria top", foto: ["Cardigan_con_bottoni_rivestiti_still.webp", "Cardigan_con_bottoni_rivestiti.webp"] },
-  { id: "cardigan-con-tasche", nome: "Cardigan con tasche", categorie: "maglieria top", foto: ["Cardigan_con_tasche.webp"] },
+  { id: "cardigan-con-tasche", nome: "Cardigan con tasche", categorie: "maglieria top", foto: ["Cardigan_con_tasche_still.webp", "Cardigan_con_tasche.webp"] },
   { id: "maglione-con-manica-scesa", nome: "Maglione con manica scesa", categorie: "maglieria top", foto: ["Maglione_con_manica_scesa_still.webp", "Maglione_con_manica_scesa.webp"] },
   { id: "polo-in-maglia", nome: "Polo in maglia", categorie: "maglieria top", foto: ["Polo_in_maglia_still.webp", "Polo_in_maglia.webp"] },
   { id: "top-in-maglia-con-bottoncini", nome: "Top in maglia con bottoncini", categorie: "maglieria top", foto: ["Top_in_maglia_con_bottoncini_still.webp", "Top_in_maglia_con_bottoncini.webp"] },
