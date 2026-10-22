@@ -1204,3 +1204,9 @@ a.store-addr:hover {
   .pdp-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(0,0,0,0.2); }
   .pdp-dots span.on { background: var(--black); }
 }
+
+/* ─── Descrizione breve sotto il nome del capo ────────────── */
+.coll-grid .product.has-desc .product-name { font-family: var(--serif); font-size: 1.05rem; margin-bottom: 0.2rem; }
+.product-desc { font-size: 0.78rem; color: var(--grey); line-height: 1.45; }
+.pdp-info h1 { margin-bottom: 0.75rem; }
+.pdp-desc { font-size: 1rem; color: var(--black); line-height: 1.5; margin-bottom: 1rem; }

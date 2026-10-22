@@ -99,7 +99,7 @@
     var grid = document.getElementById('coll-grid');
     PRODOTTI.forEach(function (p) {
       var a = document.createElement('a');
-      a.className = 'product' + (p.foto.length > 1 ? ' has-alt' : '');
+      a.className = 'product' + (p.foto.length > 1 ? ' has-alt' : '') + (p.descrizione ? ' has-desc' : '');
       a.href = 'prodotto.html?id=' + p.id;
       a.dataset.cat = p.categorie;
       var html = '<div class="product-img">' +
@@ -107,7 +107,8 @@
       if (p.foto.length > 1) {
         html += '<img class="img-alt" src="images/products/' + p.foto[1] + '" alt="' + p.nome + ' indossato" loading="lazy" />';
       }
-      html += '</div><div class="product-meta"><p class="product-name">' + p.nome + '</p></div>';
+      html += '</div><div class="product-meta"><p class="product-name">' + p.nome + '</p>' +
+        (p.descrizione ? '<p class="product-desc">' + p.descrizione + '</p>' : '') + '</div>';
       a.innerHTML = html;
       grid.appendChild(a);
     });

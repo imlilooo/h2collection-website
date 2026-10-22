@@ -51,6 +51,7 @@
       <div class="pdp-info">
         <span class="eyebrow dark" id="pdp-cat">AI 2026/27</span>
         <h1 id="pdp-name"></h1>
+        <p class="pdp-desc" id="pdp-desc"></p>
         <p class="pdp-note">Disponibile nei punti vendita H2 Collection.</p>
         <a class="btn-outline dark" href="store-locator.html">Trova il punto vendita</a>
       </div>
@@ -102,6 +103,8 @@
 
     document.title = p.nome + ' — H2 Collection';
     document.getElementById('pdp-name').textContent = p.nome;
+    var desc = document.getElementById('pdp-desc');
+    if (p.descrizione) desc.textContent = p.descrizione; else desc.remove();
     var cat = p.categorie.split(' ')[0];
     document.getElementById('pdp-cat').textContent = (NOMI_CAT[cat] || '') + ' · AI 2026/27';
 
