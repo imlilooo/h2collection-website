@@ -22,7 +22,7 @@ var PRODOTTI = [
   { id: "nora", nome: "Nora", descrizione: "Coste verticali, manica ampia e polsino lungo", categorie: "maglieria top", foto: ["Maglione_con_manica_scesa_still.webp", "Maglione_con_manica_scesa.webp"] },
   { id: "ines", nome: "Ines", descrizione: "Polo a coste sottili con bottoncini rivestiti", categorie: "maglieria top", foto: ["Polo_in_maglia_still.webp", "Polo_in_maglia.webp"] },
   { id: "lou", nome: "Lou", descrizione: "Smanicato con drappeggio laterale e bottoni gioiello", categorie: "maglieria top", foto: ["Top_in_maglia_con_bottoncini_still.webp", "Top_in_maglia_con_bottoncini.webp"] },
-  { id: "audrey", nome: "Audrey", descrizione: "Righe tono su tono, tasche applicate e polsi a balza", categorie: "maglieria top", foto: ["Cardigan_rigato_con_polsini_a_balza.webp", "Audrey_modella_1.webp", "Audrey_dettaglio.webp"] },
+  { id: "audrey", nome: "Audrey", descrizione: "Righe tono su tono, tasche applicate e polsi a balza", categorie: "maglieria top", foto: ["Cardigan_rigato_con_polsini_a_balza.webp", "Audrey_modella_1.webp"] },
   { id: "olivia", nome: "Olivia", descrizione: "Scollo a V con piccolo ricamo di olive sul petto", categorie: "maglieria top", foto: ["Cardigan_scollo_a_V_con_ricamo.webp", "Olivia_modella_1.webp", "Olivia_dettaglio.webp"] },
   { id: "grace", nome: "Grace", descrizione: "Collo alla coreana, vita segnata e peplo, bottoni dorati", categorie: "maglieria top", foto: ["Cardigan_peplum_con_bottoni_gioiello.webp", "Grace_modella_1.webp"] },
   { id: "vera", nome: "Vera", descrizione: "Abbottonatura ondulata e grandi bottoni rivestiti", categorie: "maglieria top", foto: ["Cardigan_peplum_con_bottoni_rivestiti.webp", "Vera_modella_1.webp"] },
