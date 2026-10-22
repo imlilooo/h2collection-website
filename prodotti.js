@@ -26,7 +26,7 @@ var PRODOTTI = [
   { id: "olivia", nome: "Olivia", descrizione: "Scollo a V con piccolo ricamo di olive sul petto", categorie: "maglieria top", foto: ["Cardigan_scollo_a_V_con_ricamo.webp", "Olivia_modella_1.webp", "Olivia_dettaglio.webp"] },
   { id: "grace", nome: "Grace", descrizione: "Collo alla coreana, vita segnata e peplo, bottoni dorati", categorie: "maglieria top", foto: ["Cardigan_peplum_con_bottoni_gioiello.webp", "Grace_modella_1.webp"] },
   { id: "vera", nome: "Vera", descrizione: "Abbottonatura ondulata e grandi bottoni rivestiti", categorie: "maglieria top", foto: ["Cardigan_peplum_con_bottoni_rivestiti.webp", "Vera_modella_1.webp"] },
-  { id: "dalia", nome: "Dalia", descrizione: "Gonna midi svasata a coste larghe", categorie: "maglieria", foto: ["Gonna_svasata_a_coste.webp"] },
+  { id: "dalia", nome: "Dalia", descrizione: "Gonna midi svasata a coste larghe", categorie: "maglieria", foto: ["Gonna_svasata_a_coste.webp", "Dalia_modella_1.webp"] },
   { id: "alba", nome: "Alba", descrizione: "Longuette con finte patte abbottonate", categorie: "maglieria", foto: ["Gonna_longuette_in_maglia.webp", "Alba_modella_1.webp"] },
   { id: "lea", nome: "Lea", descrizione: "A portafoglio, vita a coste e abbottonatura laterale", categorie: "maglieria top", foto: ["Cardigan_incrociato.webp", "Lea_modella_1.webp"] },
   { id: "lola", nome: "Lola", descrizione: "Manica a kimono, collana gioiello applicata e cintura in vita", categorie: "maglieria top", foto: ["Maglia_con_collana_gioiello_e_cintura.webp", "Lola_modella_1.webp"] },
