@@ -33,5 +33,7 @@ var PRODOTTI = [
   { id: "mia", nome: "Mia", descrizione: "Scollo quadro e arricciatura laterale con bottoni gioiello", categorie: "maglieria top", foto: ["Maglia_scollo_quadro_con_bottoni_gioiello.webp", "Mia_modella_1.webp"] },
   { id: "nina", nome: "Nina", descrizione: "Lupetto con fiocco applicato sulla spalla", categorie: "maglieria top", foto: ["Maglia_collo_alto_con_fiocco.webp"] },
   { id: "iris", nome: "Iris", descrizione: "Collo morbido a cascata, manica ad aletta e drappeggio sui fianchi", categorie: "maglieria top", foto: ["Iris.webp", "Iris_modella_1.webp"] },
+  { id: "luna", nome: "Luna", descrizione: "Lupetto a coste sottili con fiocco sulla spalla e spacchetti laterali", categorie: "maglieria top", foto: ["Luna.webp", "Luna_modella_1.webp"] },
+  { id: "gigi", nome: "Gigi", descrizione: "Girocollo essenziale con bottone gioiello a cagnolino", categorie: "maglieria top", foto: ["Gigi.webp", "Gigi_modella_1.webp", "Gigi_dettaglio.webp"] },
   { id: "tuta-set", nome: "Tuta set", categorie: "pantaloni top", foto: ["Tuta_set.webp"] },
 ];
