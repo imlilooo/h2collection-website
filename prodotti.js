@@ -31,7 +31,7 @@ var PRODOTTI = [
   { id: "lea", nome: "Lea", descrizione: "A portafoglio, vita a coste e abbottonatura laterale", categorie: "maglieria top", foto: ["Cardigan_incrociato.webp", "Lea_modella_1.webp"] },
   { id: "lola", nome: "Lola", descrizione: "Manica a kimono, collana gioiello applicata e cintura in vita", categorie: "maglieria top", foto: ["Maglia_con_collana_gioiello_e_cintura.webp", "Lola_modella_1.webp"] },
   { id: "mia", nome: "Mia", descrizione: "Scollo quadro e arricciatura laterale con bottoni gioiello", categorie: "maglieria top", foto: ["Maglia_scollo_quadro_con_bottoni_gioiello.webp", "Mia_modella_1.webp"] },
-  { id: "nina", nome: "Nina", descrizione: "Lupetto con fiocco applicato sulla spalla", categorie: "maglieria top", foto: ["Maglia_collo_alto_con_fiocco.webp"] },
+  { id: "nina", nome: "Nina", descrizione: "Lupetto con fiocco applicato sulla spalla", categorie: "maglieria top", foto: ["Maglia_collo_alto_con_fiocco.webp", "Nina_modella_1.webp"] },
   { id: "iris", nome: "Iris", descrizione: "Collo morbido a cascata, manica ad aletta e drappeggio sui fianchi", categorie: "maglieria top", foto: ["Iris.webp", "Iris_modella_1.webp"] },
   { id: "luna", nome: "Luna", descrizione: "Lupetto a coste sottili con fiocco sulla spalla e spacchetti laterali", categorie: "maglieria top", foto: ["Luna.webp", "Luna_modella_1.webp"] },
   { id: "gigi", nome: "Gigi", descrizione: "Girocollo essenziale con bottone gioiello a cagnolino", categorie: "maglieria top", foto: ["Gigi.webp", "Gigi_modella_1.webp", "Gigi_dettaglio.webp"] },
