@@ -13,7 +13,7 @@ var PRODOTTI = [
   { id: "maxi-dress-floreale", nome: "Maxi dress floreale", categorie: "abiti", foto: ["Maxi_dress_floreale.webp"] },
   { id: "pantaloni-balloon", nome: "Pantaloni balloon", categorie: "pantaloni", foto: ["Pantaloni_balloon.webp"] },
   { id: "pantapalazzo", nome: "Pantapalazzo", categorie: "pantaloni", foto: ["Pantapalazzo.webp"] },
-  { id: "muse", nome: "Muse", descrizione: "Blazer monopetto con tre taschine a patta", categorie: "capispalla", foto: ["Muse.webp", "Muse_modella_1.webp"] },
+  { id: "muse", nome: "Muse", descrizione: "Blazer monopetto con tre tasche a patta", categorie: "capispalla", foto: ["Muse.webp", "Muse_modella_1.webp"] },
   { id: "pantalone-con-gamba-ampia", nome: "Pantalone con gamba ampia", descrizione: "Vita alta e gamba ampia", categorie: "pantaloni", foto: ["Pantalone_gamba_ampia.webp", "Muse_tailleur_modella.webp"] },
   { id: "muse-tailleur", nome: "Muse", descrizione: "Blazer e pantalone con gamba ampia", categorie: "tailleurs", foto: ["Muse_tailleur_modella.webp"] },
   { id: "giacca-in-pelle", nome: "Giacca in pelle", categorie: "capispalla", foto: ["Giacca_in_pelle.webp"] },
