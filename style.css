@@ -291,7 +291,7 @@ h2 em, h2 .italic { font-style: italic; color: inherit; }
 .hero-bg {
   position: absolute;
   inset: 0;
-  background: url('images/hero.png') center/cover no-repeat;
+  background: url('images/hero-black-friday.jpg') center/cover no-repeat;
 }
 
 .hero-bg::after {
@@ -715,7 +715,7 @@ footer {
   .nav-inner { grid-template-columns: 1fr auto 1fr; }
 
   .hero { padding: 0 2rem 4rem; }
-  .hero-bg { background-position: 74% top; }
+  .hero-bg { background-position: 56% top; }
 
   .editorial { grid-template-columns: 1fr; }
   .editorial-img { display: none; }
