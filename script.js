@@ -18,7 +18,7 @@ mobileMenu.querySelectorAll('a').forEach(link => {
 (function () {
   const KEY_DONE = 'h2_nl_iscritta';      // già iscritta → non mostrare più
   const KEY_SEEN = 'h2_nl_chiuso';        // chiuso → ripresenta dopo 7 giorni
-  const DELAY_MS = 8000;
+  const DELAY_MS = 3000;
   const page = location.pathname.split('/').pop();
   if (['newsletter.html', 'grazie.html'].includes(page)) return;
 
@@ -54,7 +54,7 @@ mobileMenu.querySelectorAll('a').forEach(link => {
         <button type="submit" class="nlp-btn">Iscriviti</button>
         <p class="nlp-msg" aria-live="polite"></p>
       </form>
-      <p class="nlp-note">*Buono valido in tutti i punti vendita H2 Collection. Ti regaliamo anche un buono per il tuo compleanno. Puoi disiscriverti in qualsiasi momento.</p>
+      <p class="nlp-note">*Buono valido in tutti i punti vendita H2 Collection. Puoi disiscriverti in qualsiasi momento.</p>
     </div>`;
   document.body.appendChild(wrap);
 
