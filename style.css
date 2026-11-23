@@ -1244,3 +1244,4 @@ body.nlp-lock { overflow: hidden; }
   .nlp-btn { align-self: stretch; }
 }
 .saldi-sub.saldi-sub-top { margin-top: 0.6rem; margin-bottom: 0.2rem; }
+.saldi-lastdays { display: block; font-family: 'Inter', sans-serif; font-size: clamp(1.2rem, 2.2vw, 1.8rem); font-weight: 600; letter-spacing: 0.12em; color: #fff; margin-top: 0.8rem; }
