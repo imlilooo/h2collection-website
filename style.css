@@ -715,7 +715,7 @@ footer {
   .nav-inner { grid-template-columns: 1fr auto 1fr; }
 
   .hero { padding: 0 2rem 4rem; }
-  .hero-bg { background-position: 58% top; }
+  .hero-bg { background-position: 56% top; }
 
   .editorial { grid-template-columns: 1fr; }
   .editorial-img { display: none; }
@@ -1243,3 +1243,4 @@ body.nlp-lock { overflow: hidden; }
   .nlp-row { grid-template-columns: 1fr; gap: 1.2rem; }
   .nlp-btn { align-self: stretch; }
 }
+.saldi-sub.saldi-sub-top { margin-top: 0.6rem; margin-bottom: 0.2rem; }
