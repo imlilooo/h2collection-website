@@ -6,15 +6,17 @@ const { createHandlers } = require('../lib/newsletter');
 const db = new PGlite();
 const initialized = (async () => {
   await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
-  const file = readdirSync('supabase/migrations').find(name => name.endsWith('_newsletter_otp_state.sql'));
-  await db.exec(readFileSync(`supabase/migrations/${file}`, 'utf8'));
+  // Apply migrations in order; the cleanup job needs pg_cron, which PGlite lacks.
+  for (const file of readdirSync('supabase/migrations').filter(name => name.endsWith('.sql') && !name.includes('cleanup')).sort())
+    await db.exec(readFileSync(`supabase/migrations/${file}`, 'utf8'));
 })();
 const data = {email:'test@example.com',nome:'Ada',cognome:'Rossi',compleanno:'1990-01-01',citta:'Palermo',phone:'+393331234567',consent:true};
-async function setup() {
+async function setup(envOverrides = {}) {
   await initialized;
   await db.exec('truncate newsletter_private.challenges, newsletter_private.sessions, newsletter_private.delivery_limits;');
   const env = Object.fromEntries(['SUPABASE_URL','SUPABASE_SECRET_KEY','BREVO_API_KEY','META_ACCESS_TOKEN','META_PHONE_NUMBER_ID','META_GRAPH_VERSION','META_OTP_TEMPLATE','TWILIO_ACCOUNT_SID','TWILIO_AUTH_TOKEN','TWILIO_MESSAGING_SERVICE_SID'].map(k=>[k,k]));
   env.OTP_HMAC_SECRET = 'test-secret'.repeat(4);
+  for (const [key, value] of Object.entries(envOverrides)) { if (value === undefined) delete env[key]; else env[key] = value; }
   const state = {time:1000000,code:'123456',brevo:[],send:[],providerStatus:200,brevoStatus:201,logs:[]};
   const handlers = createHandlers({env,now:()=>state.time,code:()=>state.code,logger:entry=>state.logs.push(entry),fetcher:async (url, options) => {
     if (url.endsWith('/rest/v1/rpc/newsletter_otp_transition')) {
@@ -136,4 +138,20 @@ test('delivery diagnostics retain numeric provider codes and redact response dat
   state.time+=60000;state.providerNetworkFailure=true;
   await call('challenge');
   assert.deepEqual(state.logs[2],{event:'otp_delivery_failed',channel:'whatsapp',reason:'network_or_timeout'});
+});
+
+test('WHATSAPP_ENABLED=false sends SMS first without Meta configuration',async()=>{
+  const noMeta={WHATSAPP_ENABLED:'false',META_ACCESS_TOKEN:undefined,META_PHONE_NUMBER_ID:undefined,META_GRAPH_VERSION:undefined,META_OTP_TEMPLATE:undefined};
+  const {call,state}=await setup(noMeta);
+  const c=await call('challenge');
+  assert.equal(c.status,200); assert.equal(c.sent,true); assert.equal(c.channel,'sms'); assert.deepEqual(c.channels,['sms']);
+  assert.equal(c.smsAfter,c.resendAfter);
+  assert.match(state.send[0].url,/api\.twilio\.com/); assert.match(state.send[0].body,/MessagingServiceSid/);
+  assert.equal((await call('challenge',{channel:'whatsapp'})).status,400);
+  assert.equal((await call('challenge',{channel:'sms',challengeId:c.challengeId})).status,429);
+  state.time+=60000; state.code='654321';
+  assert.equal((await call('challenge',{channel:'sms',challengeId:c.challengeId})).sent,true);
+  assert.equal(state.send.length,2); assert.ok(state.send.every(s=>s.url.includes('twilio')));
+  assert.equal((await call('subscribe',{challengeId:c.challengeId,otp:'654321'})).success,true);
+  assert.equal(state.brevo.length,1);
 });

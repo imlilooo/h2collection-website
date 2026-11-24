@@ -8,7 +8,7 @@ window.NewsletterOtp = {
     const suffix = popup ? 'popup' : 'page';
     field.innerHTML = `<label for="phone-${suffix}">Numero di telefono con prefisso internazionale</label>
       <input id="phone-${suffix}" name="phone" type="tel" value="+39 " required autocomplete="tel" maxlength="30" aria-describedby="phone-note-${suffix}">
-      <p id="phone-note-${suffix}" class="otp-note">Riceverai un codice su WhatsApp per verificare il numero. Il numero verificato sarà salvato insieme al contatto newsletter. Questa verifica non ti iscrive a messaggi promozionali WhatsApp.</p>`;
+      <p id="phone-note-${suffix}" class="otp-note">Riceverai un codice di verifica per confermare il numero. Il numero verificato sarà salvato insieme al contatto newsletter.</p>`;
     form.insertBefore(field, submit);
     const panel = document.createElement('div');
     panel.className = 'otp-panel';
@@ -27,6 +27,9 @@ window.NewsletterOtp = {
     const status = panel.querySelector('.otp-countdown');
     const buttons = [...panel.querySelectorAll('button')];
     let challenge = null, busy = false, timer;
+    // The server decides which channels exist (WhatsApp can be switched off); the first is primary.
+    let channels = ['whatsapp', 'sms'];
+    const label = channel => channel === 'whatsapp' ? 'Invia di nuovo su WhatsApp' : channels[0] === 'sms' ? 'Invia di nuovo via SMS' : 'Invia tramite SMS';
     const value = name => (form.elements[name] || form.elements[name.toUpperCase()]).value.trim();
     function details() {
       const [day, month, year] = value('compleanno').split('-');
@@ -38,14 +41,15 @@ window.NewsletterOtp = {
       status.textContent = remaining ? `Il codice scade tra ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}.` : 'Codice scaduto. Richiedi un nuovo codice.';
       buttons.forEach(button => {
         const wait = Math.max(0, Math.ceil((challenge[button.dataset.channel === 'sms' ? 'smsAt' : 'resendAt'] - Date.now()) / 1000));
+        button.hidden = !channels.includes(button.dataset.channel);
         button.disabled = busy || wait > 0;
-        button.textContent = (button.dataset.channel === 'sms' ? 'Invia tramite SMS' : 'Invia di nuovo su WhatsApp') + (wait ? ` (${wait}s)` : '');
+        button.textContent = label(button.dataset.channel) + (wait ? ` (${wait}s)` : '');
       });
       submit.disabled = busy || remaining === 0 || !challenge.sent;
     }
     function reset() {
       challenge = null; clearInterval(timer); panel.hidden = true; otp.required = false; otp.value = '';
-      submit.disabled = false; submit.textContent = 'Ricevi codice su WhatsApp';
+      submit.disabled = false; submit.textContent = 'Ricevi il codice';
     }
     reset();
     form.addEventListener('input', event => {
@@ -76,12 +80,15 @@ window.NewsletterOtp = {
       }
     }
     async function send(channel) {
-      const body = await api('challenge', {...details(), channel, ...(challenge ? {challengeId:challenge.id} : {})});
+      // No channel on the first send: the server uses its primary channel.
+      const body = await api('challenge', {...details(), ...(channel ? {channel} : {}), ...(challenge ? {challengeId:challenge.id} : {})});
       const start = Date.now();
+      if (Array.isArray(body.channels) && body.channels.length) channels = body.channels;
       challenge = {id:body.challengeId, sent:body.sent, expires:start+body.expiresIn*1000, resendAt:start+body.resendAfter*1000, smsAt:start+body.smsAfter*1000};
       panel.hidden = false; otp.required = true; otp.value = '';
       submit.textContent = 'Verifica e iscriviti';
-      message.textContent = body.sent ? `Codice inviato ${channel === 'sms' ? 'tramite SMS' : 'su WhatsApp'}. Inseriscilo per iscriverti.` : 'Invio non riuscito. Riprova o richiedi un SMS quando disponibile.';
+      message.textContent = body.sent ? `Codice inviato ${body.channel === 'sms' ? 'tramite SMS' : 'su WhatsApp'}. Inseriscilo per iscriverti.`
+        : channels.length > 1 ? 'Invio non riuscito. Riprova o richiedi un SMS quando disponibile.' : 'Invio non riuscito. Riprova tra poco.';
       clearInterval(timer); timer = setInterval(update, 1000); update();
       // Focus after run() re-enables the inputs.
       setTimeout(() => otp.focus(), 0);
@@ -91,7 +98,7 @@ window.NewsletterOtp = {
       event.preventDefault();
       if (!form.reportValidity()) return;
       run(async () => {
-        if (!challenge) return send('whatsapp');
+        if (!challenge) return send();
         await api('subscribe', {...details(), challengeId:challenge.id, otp:otp.value.trim()});
         clearInterval(timer); reset(); form.reset();
         message.textContent = 'Iscrizione completata — benvenuta nel club!';
