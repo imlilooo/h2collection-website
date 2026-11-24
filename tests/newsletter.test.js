@@ -233,3 +233,9 @@ test('Turnstile is off unless both keys are set',async()=>{
   assert.deepEqual(await call('challenge',{}, {httpMethod:'GET'}),{status:200,turnstileSiteKey:null});
   assert.equal((await call('challenge')).status,200); assert.equal(state.turnstile.length,0);
 });
+
+test('handlers always return a Promise (Netlify rejects synchronous responses)',()=>{
+  const handlers=createHandlers({env:{}});
+  for (const method of ['GET','POST','PUT']) for (const handler of Object.values(handlers))
+    assert.ok(handler({httpMethod:method,headers:{}}) instanceof Promise);
+});
