@@ -17,7 +17,7 @@ async function setup(envOverrides = {}) {
   const env = Object.fromEntries(['SUPABASE_URL','SUPABASE_SECRET_KEY','BREVO_API_KEY','META_ACCESS_TOKEN','META_PHONE_NUMBER_ID','META_GRAPH_VERSION','META_OTP_TEMPLATE','TWILIO_ACCOUNT_SID','TWILIO_AUTH_TOKEN','TWILIO_MESSAGING_SERVICE_SID'].map(k=>[k,k]));
   env.OTP_HMAC_SECRET = 'test-secret'.repeat(4);
   for (const [key, value] of Object.entries(envOverrides)) { if (value === undefined) delete env[key]; else env[key] = value; }
-  const state = {time:1000000,code:'123456',brevo:[],send:[],providerStatus:200,brevoStatus:201,logs:[],lookups:[],emailContact:null,phoneContacts:[]};
+  const state = {time:1000000,code:'123456',brevo:[],send:[],providerStatus:200,brevoStatus:201,logs:[],lookups:[],emailContact:null,phoneContacts:[],turnstile:[]};
   const handlers = createHandlers({env,now:()=>state.time,code:()=>state.code,logger:entry=>state.logs.push(entry),fetcher:async (url, options) => {
     if (url.endsWith('/rest/v1/rpc/newsletter_otp_transition')) {
       const p = JSON.parse(options.body);
@@ -33,6 +33,7 @@ async function setup(envOverrides = {}) {
       return {ok:true,status:200,json:async()=>({contacts:state.phoneContacts,count:state.phoneContacts.length})};
     }
     if (url.includes('brevo')) { state.brevo.push(JSON.parse(options.body)); if(state.wait) await state.wait; if(state.networkFailure) throw Error(); return {status:state.brevoStatus}; }
+    if (url.includes('challenges.cloudflare.com')) { state.turnstile.push(options.body); return {ok:!state.turnstileStatus,status:state.turnstileStatus||200,json:async()=>state.turnstileResult||{success:true}}; }
     state.send.push({url,body:options.body}); if (state.providerNetworkFailure) throw Error('secret-token and phone must not be logged'); return {ok:state.providerStatus===200,status:state.providerStatus,json:async()=>state.providerBody || {}};
   }});
   async function call(name, extra={}, overrides={}) {
@@ -48,7 +49,8 @@ test('requires consent, valid data and OTP; does not subscribe on send', async()
   assert.equal((await call('challenge',{phone:'123'})).status,400);
   assert.equal((await call('challenge',{compleanno:'1990-02-31'})).status,400);
   assert.equal((await call('challenge',{}, {body:'null'})).status,400);
-  assert.equal((await call('challenge',{}, {httpMethod:'GET'})).status,405);
+  assert.equal((await call('subscribe',{}, {httpMethod:'GET'})).status,405);
+  assert.deepEqual(await call('challenge',{}, {httpMethod:'GET'}),{status:200,turnstileSiteKey:null});
   const c=await call('challenge'); assert.equal(c.sent,true); assert.equal(c.otp,undefined); assert.equal(state.brevo.length,0);
   assert.equal((await call('subscribe',{challengeId:c.challengeId,otp:'123456',email:'other@example.com'})).status,400);
   assert.equal((await call('subscribe',{challengeId:c.challengeId,otp:'123456'})).success,true);
@@ -203,4 +205,37 @@ test('Brevo pre-check is limited to 30 lookups per IP per hour',async()=>{
   assert.equal(r.status,429); assert.match(r.error,/Troppe richieste/);
   state.time+=3600001;
   assert.equal((await call('challenge')).status,409);
+});
+
+test('Turnstile: config exposes the site key; missing, rejected or unverifiable tokens send nothing',async()=>{
+  const {call,state}=await setup({TURNSTILE_SITE_KEY:'site-key',TURNSTILE_SECRET_KEY:'secret-key'});
+  assert.deepEqual(await call('challenge',{}, {httpMethod:'GET'}),{status:200,turnstileSiteKey:'site-key'});
+  let r=await call('challenge');
+  assert.equal(r.status,403); assert.equal(r.code,'turnstile');
+  assert.equal(state.turnstile.length,0); assert.equal(state.lookups.length,0); assert.equal(state.send.length,0);
+  state.turnstileResult={success:false,'error-codes':['invalid-input-response']};
+  r=await call('challenge',{turnstileToken:'bad'});
+  assert.equal(r.status,403); assert.equal(state.lookups.length,0); assert.equal(state.send.length,0);
+  assert.deepEqual(state.logs.at(-1),{event:'turnstile_rejected',codes:['invalid-input-response']});
+  state.turnstileStatus=500;
+  assert.equal((await call('challenge',{turnstileToken:'tok'})).status,503);
+  assert.equal(state.send.length,0);
+});
+test('Turnstile: a valid token is verified with secret and client IP, then the code is sent',async()=>{
+  const {call,state}=await setup({TURNSTILE_SITE_KEY:'site-key',TURNSTILE_SECRET_KEY:'secret-key'});
+  const r=await call('challenge',{turnstileToken:'good-token'});
+  assert.equal(r.status,200); assert.equal(r.sent,true); assert.equal(state.send.length,1);
+  const sent=new URLSearchParams(state.turnstile[0]);
+  assert.equal(sent.get('secret'),'secret-key'); assert.equal(sent.get('response'),'good-token'); assert.equal(sent.get('remoteip'),'127.0.0.1');
+});
+test('Turnstile is off unless both keys are set',async()=>{
+  const {call,state}=await setup({TURNSTILE_SECRET_KEY:'secret-key'});
+  assert.deepEqual(await call('challenge',{}, {httpMethod:'GET'}),{status:200,turnstileSiteKey:null});
+  assert.equal((await call('challenge')).status,200); assert.equal(state.turnstile.length,0);
+});
+
+test('handlers always return a Promise (Netlify rejects synchronous responses)',()=>{
+  const handlers=createHandlers({env:{}});
+  for (const method of ['GET','POST','PUT']) for (const handler of Object.values(handlers))
+    assert.ok(handler({httpMethod:method,headers:{}}) instanceof Promise);
 });
