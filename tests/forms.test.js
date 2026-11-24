@@ -8,6 +8,7 @@ for (const popup of [false,true]) {
     const w=dom.window, calls=[];
     w.setInterval=()=>0; w.clearInterval=()=>{};
     w.fetch=async (url,options)=>{
+    if(options.method==='GET') return {ok:true,json:async()=>({turnstileSiteKey:null})};
       calls.push({url,body:JSON.parse(options.body)});
       return url.endsWith('challenge') ? {ok:true,json:async()=>({challengeId:'id',sent:true,expiresIn:300,resendAfter:60,smsAfter:60})} : {ok:false,json:async()=>({error:'Codice non corretto.'})};
     };
@@ -35,6 +36,7 @@ test('SMS-only server: first send has no channel and WhatsApp button is hidden',
   const w=dom.window, calls=[];
   w.setInterval=()=>0; w.clearInterval=()=>{};
   w.fetch=async (url,options)=>{
+    if(options.method==='GET') return {ok:true,json:async()=>({turnstileSiteKey:null})};
     calls.push({url,body:JSON.parse(options.body)});
     return {ok:true,json:async()=>({challengeId:'id',sent:true,channel:'sms',channels:['sms'],expiresIn:300,resendAfter:60,smsAfter:60})};
   };
@@ -74,3 +76,29 @@ for (const popup of [false,true]) {
     dom.window.close();
   });
 }
+
+test('Turnstile on: the form gets a fresh token for each code request',async()=>{
+  const dom=new JSDOM(readFileSync('newsletter.html','utf8'),{runScripts:'outside-only',url:'https://test.local/newsletter.html'});
+  const w=dom.window, calls=[], widget={};
+  w.setInterval=()=>0; w.clearInterval=()=>{};
+  let n=0;
+  w.turnstile={render:(el,opts)=>{Object.assign(widget,opts,{el}); return 'w1';}, reset:()=>{widget.resets=(widget.resets||0)+1;}, execute:()=>setTimeout(()=>widget.callback(`token-${++n}`),0)};
+  w.fetch=async (url,options)=>{
+    if(options.method==='GET') return {ok:true,json:async()=>({turnstileSiteKey:'site-key'})};
+    calls.push({url,body:JSON.parse(options.body)});
+    return {ok:true,json:async()=>({challengeId:'id',sent:true,channel:'sms',channels:['sms'],expiresIn:300,resendAfter:0,smsAfter:0})};
+  };
+  w.eval(readFileSync('newsletter-otp.js','utf8'));
+  w.eval(readFileSync('script.js','utf8'));
+  w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
+  const form=w.document.querySelector('#sib-form');
+  const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
+  set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+  const settle=()=>new Promise(r=>setTimeout(r,20));
+  form.dispatchEvent(new w.Event('submit',{cancelable:true})); await settle();
+  assert.equal(widget.sitekey,'site-key'); assert.equal(widget.el.className,'otp-turnstile');
+  assert.equal(calls[0].body.turnstileToken,'token-1');
+  form.querySelector('[data-channel=sms]').click(); await settle();
+  assert.equal(widget.resets,1); assert.equal(calls[1].body.turnstileToken,'token-2');
+  dom.window.close();
+});

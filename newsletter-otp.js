@@ -1,5 +1,23 @@
 /* Shared newsletter verification controller for the page and popup. */
-window.NewsletterOtp = {
+(() => {
+  // Form settings from the server (the Turnstile site key, or null when the bot check is off).
+  let configPromise;
+  const loadConfig = () => configPromise || (configPromise = fetch('/.netlify/functions/challenge', {method:'GET', headers:{Accept:'application/json'}})
+    .then(response => response.ok ? response.json() : {}).catch(() => ({})));
+  // Cloudflare's script is loaded only when someone requests a code.
+  let scriptPromise;
+  const loadTurnstile = () => scriptPromise || (scriptPromise = new Promise((resolve, reject) => {
+    if (window.turnstile) return resolve(window.turnstile);
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.onload = () => window.turnstile ? resolve(window.turnstile) : reject(Error('Turnstile missing'));
+    script.onerror = () => { scriptPromise = null; reject(Error('Turnstile failed to load')); };
+    document.head.appendChild(script);
+  }));
+  window.NewsletterOtp = { loadConfig, loadTurnstile };
+})();
+Object.assign(window.NewsletterOtp, {
   attach(form, onSuccess) {
     const popup = form.classList.contains('nlp-form');
     const submit = form.querySelector('[type="submit"]');
@@ -18,6 +36,10 @@ window.NewsletterOtp = {
       <p id="otp-status-${suffix}" class="otp-note otp-countdown" role="timer" aria-live="off"></p>
       <div class="otp-actions"><button type="button" data-channel="whatsapp">Invia di nuovo su WhatsApp</button><button type="button" data-channel="sms">Invia tramite SMS</button></div>`;
     form.insertBefore(panel, submit);
+    // Cloudflare Turnstile widget: usually invisible, shows a checkbox only when unsure.
+    const human = document.createElement('div');
+    human.className = 'otp-turnstile';
+    form.insertBefore(human, submit);
     const message = document.createElement('p');
     message.className = 'otp-message';
     message.setAttribute('role', 'status');
@@ -79,9 +101,31 @@ window.NewsletterOtp = {
         if (challenge) update(); else submit.disabled = false;
       }
     }
+    // Fresh single-use Turnstile token for each code request; null when the bot check is off.
+    let widgetId = null, pending = null;
+    async function humanToken() {
+      const { turnstileSiteKey } = await window.NewsletterOtp.loadConfig();
+      if (!turnstileSiteKey) return null;
+      const failed = Error('Verifica di sicurezza non riuscita. Ricarica la pagina e riprova.');
+      let turnstile;
+      try { turnstile = await window.NewsletterOtp.loadTurnstile(); } catch (_) { throw failed; }
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => { pending = null; reject(failed); }, 60000);
+        pending = { resolve: token => { clearTimeout(timeout); pending = null; resolve(token); },
+          reject: () => { clearTimeout(timeout); pending = null; reject(failed); } };
+        if (widgetId === null) {
+          widgetId = turnstile.render(human, { sitekey:turnstileSiteKey, execution:'execute', appearance:'interaction-only', size:'flexible', language:'it',
+            callback: token => pending && pending.resolve(token),
+            'error-callback': () => { if (pending) pending.reject(); return true; },
+            'expired-callback': () => {} });
+        } else turnstile.reset(widgetId);
+        turnstile.execute(widgetId);
+      });
+    }
     async function send(channel) {
+      const turnstileToken = await humanToken();
       // No channel on the first send: the server uses its primary channel.
-      const body = await api('challenge', {...details(), ...(channel ? {channel} : {}), ...(challenge ? {challengeId:challenge.id} : {})});
+      const body = await api('challenge', {...details(), ...(channel ? {channel} : {}), ...(challenge ? {challengeId:challenge.id} : {}), ...(turnstileToken ? {turnstileToken} : {})});
       const start = Date.now();
       if (Array.isArray(body.channels) && body.channels.length) channels = body.channels;
       challenge = {id:body.challengeId, sent:body.sent, expires:start+body.expiresIn*1000, resendAt:start+body.resendAfter*1000, smsAt:start+body.smsAfter*1000};
@@ -106,4 +150,4 @@ window.NewsletterOtp = {
       });
     });
   }
-};
+});
