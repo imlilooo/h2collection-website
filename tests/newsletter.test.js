@@ -15,8 +15,8 @@ async function setup() {
   await db.exec('truncate newsletter_private.challenges, newsletter_private.sessions, newsletter_private.delivery_limits;');
   const env = Object.fromEntries(['SUPABASE_URL','SUPABASE_SECRET_KEY','BREVO_API_KEY','META_ACCESS_TOKEN','META_PHONE_NUMBER_ID','META_GRAPH_VERSION','META_OTP_TEMPLATE','TWILIO_ACCOUNT_SID','TWILIO_AUTH_TOKEN','TWILIO_MESSAGING_SERVICE_SID'].map(k=>[k,k]));
   env.OTP_HMAC_SECRET = 'test-secret'.repeat(4);
-  const state = {time:1000000,code:'123456',brevo:[],send:[],providerStatus:200,brevoStatus:201};
-  const handlers = createHandlers({env,now:()=>state.time,code:()=>state.code,fetcher:async (url, options) => {
+  const state = {time:1000000,code:'123456',brevo:[],send:[],providerStatus:200,brevoStatus:201,logs:[]};
+  const handlers = createHandlers({env,now:()=>state.time,code:()=>state.code,logger:entry=>state.logs.push(entry),fetcher:async (url, options) => {
     if (url.endsWith('/rest/v1/rpc/newsletter_otp_transition')) {
       const p = JSON.parse(options.body);
       const result = await db.query('select public.newsletter_otp_transition($1,$2,$3,$4,$5,$6,$7,$8,$9) as result',
@@ -24,7 +24,7 @@ async function setup() {
       return {ok:true,json:async()=>result.rows[0].result};
     }
     if (url.includes('brevo')) { state.brevo.push(JSON.parse(options.body)); if(state.wait) await state.wait; if(state.networkFailure) throw Error(); return {status:state.brevoStatus}; }
-    state.send.push({url,body:options.body}); return {ok:state.providerStatus===200};
+    state.send.push({url,body:options.body}); if (state.providerNetworkFailure) throw Error('secret-token and phone must not be logged'); return {ok:state.providerStatus===200,status:state.providerStatus,json:async()=>state.providerBody || {}};
   }});
   async function call(name, extra={}, overrides={}) {
     const res = await handlers[name]({httpMethod:'POST',headers:{'x-nf-client-connection-ip':'127.0.0.1'},body:JSON.stringify({...data,...extra}),...overrides});
@@ -122,4 +122,18 @@ test('only service_role can execute transitions and access private state',async(
     const result=await db.query("select public.newsletter_otp_transition('verify',1000000,'00000000-0000-0000-0000-000000000001','test-phone','test-ip','test-binding','test-code',false,'') as result");
     assert.equal(result.rows[0].result,'expired');
   } finally { await db.exec('reset role'); }
+});
+
+test('delivery diagnostics retain numeric provider codes and redact response data',async()=>{
+  const {call,state}=await setup();
+  state.providerStatus=400;
+  state.providerBody={error:{code:190,error_subcode:463,message:'secret-token 123456 +393331234567'},code:21608,message:'private recipient'};
+  const c=await call('challenge');
+  assert.deepEqual(state.logs[0],{event:'otp_delivery_failed',channel:'whatsapp',httpStatus:400,providerCode:190,providerSubcode:463});
+  await call('challenge',{challengeId:c.challengeId,channel:'sms'});
+  assert.equal(state.logs[1].providerCode,21608);
+  assert.doesNotMatch(JSON.stringify(state.logs),/secret-token|123456|393331234567|private recipient/);
+  state.time+=60000;state.providerNetworkFailure=true;
+  await call('challenge');
+  assert.deepEqual(state.logs[2],{event:'otp_delivery_failed',channel:'whatsapp',reason:'network_or_timeout'});
 });
