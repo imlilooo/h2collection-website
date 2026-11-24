@@ -1,43 +1,28 @@
-const { test } = require('node:test');
+const { test, after } = require('node:test');
 const assert = require('node:assert/strict');
-const { lua, lauxlib, lualib, to_luastring, to_jsstring } = require('fengari');
+const { readFileSync, readdirSync } = require('node:fs');
+const { PGlite } = require('@electric-sql/pglite');
 const { createHandlers } = require('../lib/newsletter');
-function redisMock() {
-  const L = lauxlib.luaL_newstate(); lualib.luaL_openlibs(L);
-  function run(source) {
-    if (lauxlib.luaL_dostring(L, to_luastring(source))) throw Error(to_jsstring(lua.lua_tostring(L,-1)));
-    const value = lua.lua_gettop(L) ? to_jsstring(lua.lua_tostring(L,-1)) : null;
-    lua.lua_settop(L,0); return value;
-  }
-  run(`db={} ttl={} clock=0
-    redis={call=function(cmd,key,...)
-      local args={...}
-      if ttl[key] and ttl[key]<=clock then db[key]=nil ttl[key]=nil end
-      if cmd=='GET' then return db[key] end
-      if cmd=='HGET' then return db[key] and db[key][args[1]] end
-      if cmd=='DEL' then db[key]=nil ttl[key]=nil return 1 end
-      if cmd=='SET' then db[key]=args[1] if args[2]=='EX' then ttl[key]=clock+tonumber(args[3])*1000 end return 'OK' end
-      if cmd=='EXPIRE' then ttl[key]=clock+tonumber(args[1])*1000 return 1 end
-      if cmd=='INCR' then db[key]=tostring(tonumber(db[key] or 0)+1) return tonumber(db[key]) end
-      if cmd=='HSET' then db[key]=db[key] or {} for i=1,#args,2 do db[key][args[i]]=tostring(args[i+1]) end return 1 end
-      if cmd=='HINCRBY' then db[key][args[1]]=tostring(tonumber(db[key][args[1]])+tonumber(args[2])) return tonumber(db[key][args[1]]) end
-      error(cmd)
-    end}`);
-  const quote = value => JSON.stringify(String(value));
-  return args => {
-    const [,script,n,...rest] = args;
-    const keys = rest.slice(0,n), values = rest.slice(n);
-    return run(`clock=${values[1]} KEYS={${keys.map(quote)}} ARGV={${values.map(quote)}}\n${script}`);
-  };
-}
+const db = new PGlite();
+const initialized = (async () => {
+  await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
+  const file = readdirSync('supabase/migrations').find(name => name.endsWith('_newsletter_otp_state.sql'));
+  await db.exec(readFileSync(`supabase/migrations/${file}`, 'utf8'));
+})();
 const data = {email:'test@example.com',nome:'Ada',cognome:'Rossi',compleanno:'1990-01-01',citta:'Palermo',phone:'+393331234567',consent:true};
-function setup() {
-  const redis = redisMock();
-  const env = Object.fromEntries(['UPSTASH_REDIS_REST_URL','UPSTASH_REDIS_REST_TOKEN','BREVO_API_KEY','META_ACCESS_TOKEN','META_PHONE_NUMBER_ID','META_GRAPH_VERSION','META_OTP_TEMPLATE','TWILIO_ACCOUNT_SID','TWILIO_AUTH_TOKEN','TWILIO_MESSAGING_SERVICE_SID'].map(k=>[k,k]));
+async function setup() {
+  await initialized;
+  await db.exec('truncate newsletter_private.challenges, newsletter_private.sessions, newsletter_private.delivery_limits;');
+  const env = Object.fromEntries(['SUPABASE_URL','SUPABASE_SECRET_KEY','BREVO_API_KEY','META_ACCESS_TOKEN','META_PHONE_NUMBER_ID','META_GRAPH_VERSION','META_OTP_TEMPLATE','TWILIO_ACCOUNT_SID','TWILIO_AUTH_TOKEN','TWILIO_MESSAGING_SERVICE_SID'].map(k=>[k,k]));
   env.OTP_HMAC_SECRET = 'test-secret'.repeat(4);
   const state = {time:1000000,code:'123456',brevo:[],send:[],providerStatus:200,brevoStatus:201};
   const handlers = createHandlers({env,now:()=>state.time,code:()=>state.code,fetcher:async (url, options) => {
-    if (url === env.UPSTASH_REDIS_REST_URL) return {ok:true,json:async()=>({result:redis(JSON.parse(options.body))})};
+    if (url.endsWith('/rest/v1/rpc/newsletter_otp_transition')) {
+      const p = JSON.parse(options.body);
+      const result = await db.query('select public.newsletter_otp_transition($1,$2,$3,$4,$5,$6,$7,$8,$9) as result',
+        [p.p_op,p.p_now,p.p_id,p.p_phone,p.p_ip,p.p_binding,p.p_digest,p.p_fallback,p.p_channel]);
+      return {ok:true,json:async()=>result.rows[0].result};
+    }
     if (url.includes('brevo')) { state.brevo.push(JSON.parse(options.body)); if(state.wait) await state.wait; if(state.networkFailure) throw Error(); return {status:state.brevoStatus}; }
     state.send.push({url,body:options.body}); return {ok:state.providerStatus===200};
   }});
@@ -48,7 +33,7 @@ function setup() {
   return {state,call};
 }
 test('requires consent, valid data and OTP; does not subscribe on send', async()=>{
-  const {call,state}=setup();
+  const {call,state}=await setup();
   assert.equal((await call('subscribe')).status,400);
   assert.equal((await call('challenge',{consent:false})).status,400);
   assert.equal((await call('challenge',{phone:'123'})).status,400);
@@ -62,12 +47,12 @@ test('requires consent, valid data and OTP; does not subscribe on send', async()
   assert.equal((await call('subscribe',{challengeId:c.challengeId,otp:'123456'})).success,true); assert.equal(state.brevo.length,1);
 });
 test('five incorrect attempts exhaust challenge',async()=>{
-  const {call}=setup(), c=await call('challenge');
+  const {call}=await setup(), c=await call('challenge');
   for(let i=0;i<5;i++) assert.equal((await call('subscribe',{challengeId:c.challengeId,otp:'000000'})).status,400);
   assert.match((await call('subscribe',{challengeId:c.challengeId,otp:'123456'})).error,/Troppi tentativi/);
 });
 test('expiry, resend replacement and server-enforced SMS delay',async()=>{
-  const {call,state}=setup(), c=await call('challenge');
+  const {call,state}=await setup(), c=await call('challenge');
   assert.equal((await call('challenge',{channel:'sms',challengeId:c.challengeId})).status,429);
   assert.equal((await call('challenge')).status,429);
   state.time+=60000; state.code='654321';
@@ -77,7 +62,7 @@ test('expiry, resend replacement and server-enforced SMS delay',async()=>{
   assert.match((await call('subscribe',{challengeId:c.challengeId,otp:'654321'})).error,/scaduto/);
 });
 test('failed WhatsApp enables immediate SMS; failed send cannot verify',async()=>{
-  const {call,state}=setup(); state.providerStatus=500;
+  const {call,state}=await setup(); state.providerStatus=500;
   const c=await call('challenge'); assert.equal(c.smsAfter,0);
   assert.equal((await call('subscribe',{challengeId:c.challengeId,otp:'123456'})).status,400);
   state.providerStatus=200;
@@ -85,7 +70,7 @@ test('failed WhatsApp enables immediate SMS; failed send cannot verify',async()=
   assert.match(state.send[1].body,/MessagingServiceSid/);
 });
 test('phone and IP delivery limits are atomic across channels',async()=>{
-  const {call,state}=setup();
+  const {call,state}=await setup();
   for(let i=0;i<5;i++){ assert.equal((await call('challenge')).status,200); state.time+=60000; }
   assert.equal((await call('challenge')).status,429);
   const phones=['+442079460018','+12025550123','+33142345678','+4915123456789'];
@@ -93,10 +78,10 @@ test('phone and IP delivery limits are atomic across channels',async()=>{
   assert.equal((await call('challenge',{phone:phones[3]})).status,429);
 });
 test('concurrent completions make one Brevo call; explicit rejection can retry',async()=>{
-  const {call,state}=setup(), c=await call('challenge');
+  const {call,state}=await setup(), c=await call('challenge');
   let release; state.wait=new Promise(r=>release=r);
   const first=call('subscribe',{challengeId:c.challengeId,otp:'123456'});
-  await new Promise(r=>setImmediate(r));
+  while (!state.brevo.length) await new Promise(r=>setImmediate(r));
   assert.equal((await call('subscribe',{challengeId:c.challengeId,otp:'123456'})).status,400);
   assert.equal((await call('challenge')).status,429);
   release(); assert.equal((await first).success,true); assert.equal(state.brevo.length,1);
@@ -107,19 +92,34 @@ test('concurrent completions make one Brevo call; explicit rejection can retry',
   assert.equal((await call('subscribe',{challengeId:next.challengeId,otp:'123456'})).success,true);
 });
 test('ambiguous Brevo failure blocks repeats; configuration and storage fail closed',async()=>{
-  const {call,state}=setup(), c=await call('challenge'); state.networkFailure=true;
+  const {call,state}=await setup(), c=await call('challenge'); state.networkFailure=true;
   assert.equal((await call('subscribe',{challengeId:c.challengeId,otp:'123456'})).status,503);
   assert.equal((await call('subscribe',{challengeId:c.challengeId,otp:'123456'})).status,400);
   assert.equal(state.brevo.length,1);
   assert.equal((await createHandlers({env:{}}).challenge({httpMethod:'POST'})).statusCode,503);
-  const other=setup(); assert.equal((await other.call('challenge',{}, {headers:{}})).status,503);
+  const other=await setup(); assert.equal((await other.call('challenge',{}, {headers:{}})).status,503);
 });
 test('a new challenge invalidates the old ID and a Brevo 5xx cannot repeat',async()=>{
-  const {call,state}=setup(), old=await call('challenge');state.time+=60000;
+  const {call,state}=await setup(), old=await call('challenge');state.time+=60000;
   const current=await call('challenge');assert.notEqual(current.challengeId,old.challengeId);
   assert.equal((await call('subscribe',{challengeId:old.challengeId,otp:'123456'})).status,400);
   state.brevoStatus=500;
   assert.equal((await call('subscribe',{challengeId:current.challengeId,otp:'123456'})).status,503);
   assert.equal((await call('subscribe',{challengeId:current.challengeId,otp:'123456'})).status,400);
   assert.equal(state.brevo.length,1);
+});
+
+after(async () => { await db.close(); });
+test('only service_role can execute transitions and access private state',async()=>{
+  await initialized;
+  const signature='public.newsletter_otp_transition(text,bigint,uuid,text,text,text,text,boolean,text)';
+  for(const role of ['anon','authenticated']) {
+    const permissions=await db.query('select has_function_privilege($1,$2,\'execute\') as rpc, has_schema_privilege($1,\'newsletter_private\',\'usage\') as schema',[role,signature]);
+    assert.deepEqual(permissions.rows[0],{rpc:false,schema:false});
+  }
+  await db.exec('set role service_role');
+  try {
+    const result=await db.query("select public.newsletter_otp_transition('verify',1000000,'00000000-0000-0000-0000-000000000001','test-phone','test-ip','test-binding','test-code',false,'') as result");
+    assert.equal(result.rows[0].result,'expired');
+  } finally { await db.exec('reset role'); }
 });

@@ -29,6 +29,3 @@
   from = "/maglieria.html"
   to = "/collezione.html#maglieria"
   status = 301
-
-[functions]
-  included_files = ["lib/otp-state.lua"]
