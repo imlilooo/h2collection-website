@@ -6,7 +6,7 @@ window.NewsletterOtp = {
     const field = document.createElement('div');
     field.className = 'nl-field otp-phone';
     const suffix = popup ? 'popup' : 'page';
-    field.innerHTML = `<label for="phone-${suffix}">Numero di telefono con prefisso internazionale</label>
+    field.innerHTML = `<label for="phone-${suffix}">Numero di telefono con prefisso</label>
       <input id="phone-${suffix}" name="phone" type="tel" value="+39 " required autocomplete="tel" maxlength="30" aria-describedby="phone-note-${suffix}">
       <p id="phone-note-${suffix}" class="otp-note">Riceverai un codice di verifica per confermare il numero. Il numero verificato sarà salvato insieme al contatto newsletter.</p>`;
     form.insertBefore(field, submit);
