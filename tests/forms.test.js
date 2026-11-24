@@ -53,3 +53,24 @@ test('SMS-only server: first send has no channel and WhatsApp button is hidden',
   assert.match(form.querySelector('.otp-message').textContent,/tramite SMS/);
   dom.window.close();
 });
+
+for (const popup of [false,true]) {
+  test(`${popup?'popup':'newsletter page'}: already-subscribed response shows the message and keeps the details`,async()=>{
+    const dom=new JSDOM(readFileSync(popup?'index.html':'newsletter.html','utf8'),{runScripts:'outside-only',url:`https://test.local/${popup?'index':'newsletter'}.html`});
+    const w=dom.window;
+    w.setInterval=()=>0; w.clearInterval=()=>{};
+    w.fetch=async()=>({ok:false,json:async()=>({error:'Questa email o questo numero risulta già iscritto alla newsletter.',code:'already_subscribed'})});
+    w.eval(readFileSync('newsletter-otp.js','utf8'));
+    w.eval(readFileSync('script.js','utf8'));
+    if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
+    const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
+    const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
+    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+    form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setImmediate(r));
+    assert.match(form.querySelector('.otp-message').textContent,/già iscritto alla newsletter/);
+    assert.equal(form.querySelector('.otp-panel').hidden,true);
+    assert.equal((form.elements.email||form.elements.EMAIL).value,'test@example.com');
+    assert.equal(form.querySelector('[type=submit]').disabled,false);
+    dom.window.close();
+  });
+}

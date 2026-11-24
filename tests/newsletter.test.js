@@ -17,13 +17,20 @@ async function setup(envOverrides = {}) {
   const env = Object.fromEntries(['SUPABASE_URL','SUPABASE_SECRET_KEY','BREVO_API_KEY','META_ACCESS_TOKEN','META_PHONE_NUMBER_ID','META_GRAPH_VERSION','META_OTP_TEMPLATE','TWILIO_ACCOUNT_SID','TWILIO_AUTH_TOKEN','TWILIO_MESSAGING_SERVICE_SID'].map(k=>[k,k]));
   env.OTP_HMAC_SECRET = 'test-secret'.repeat(4);
   for (const [key, value] of Object.entries(envOverrides)) { if (value === undefined) delete env[key]; else env[key] = value; }
-  const state = {time:1000000,code:'123456',brevo:[],send:[],providerStatus:200,brevoStatus:201,logs:[]};
+  const state = {time:1000000,code:'123456',brevo:[],send:[],providerStatus:200,brevoStatus:201,logs:[],lookups:[],emailContact:null,phoneContacts:[]};
   const handlers = createHandlers({env,now:()=>state.time,code:()=>state.code,logger:entry=>state.logs.push(entry),fetcher:async (url, options) => {
     if (url.endsWith('/rest/v1/rpc/newsletter_otp_transition')) {
       const p = JSON.parse(options.body);
       const result = await db.query('select public.newsletter_otp_transition($1,$2,$3,$4,$5,$6,$7,$8,$9) as result',
         [p.p_op,p.p_now,p.p_id,p.p_phone,p.p_ip,p.p_binding,p.p_digest,p.p_fallback,p.p_channel]);
       return {ok:true,json:async()=>result.rows[0].result};
+    }
+    if (url.includes('brevo') && options.method === 'GET') {
+      state.lookups.push(url);
+      if (state.lookupNetworkFailure) throw Error('timeout');
+      if (state.lookupStatus) return {ok:false,status:state.lookupStatus,json:async()=>({})};
+      if (url.includes('identifierType=email_id')) return state.emailContact ? {ok:true,status:200,json:async()=>state.emailContact} : {ok:false,status:404,json:async()=>({message:'Contact not found'})};
+      return {ok:true,status:200,json:async()=>({contacts:state.phoneContacts,count:state.phoneContacts.length})};
     }
     if (url.includes('brevo')) { state.brevo.push(JSON.parse(options.body)); if(state.wait) await state.wait; if(state.networkFailure) throw Error(); return {status:state.brevoStatus}; }
     state.send.push({url,body:options.body}); if (state.providerNetworkFailure) throw Error('secret-token and phone must not be logged'); return {ok:state.providerStatus===200,status:state.providerStatus,json:async()=>state.providerBody || {}};
@@ -154,4 +161,46 @@ test('WHATSAPP_ENABLED=false sends SMS first without Meta configuration',async()
   assert.equal(state.send.length,2); assert.ok(state.send.every(s=>s.url.includes('twilio')));
   assert.equal((await call('subscribe',{challengeId:c.challengeId,otp:'654321'})).success,true);
   assert.equal(state.brevo.length,1);
+});
+
+test('existing newsletter subscriber by email or verified phone gets 409 and no code is sent',async()=>{
+  const {call,state}=await setup();
+  state.emailContact={email:data.email,listIds:[12,46],emailBlacklisted:false};
+  let r=await call('challenge');
+  assert.equal(r.status,409); assert.equal(r.code,'already_subscribed'); assert.match(r.error,/già iscritto/);
+  assert.equal(state.send.length,0);
+  assert.ok(state.lookups.some(u=>u.includes(encodeURIComponent(data.email))&&u.includes('identifierType=email_id')));
+  assert.ok(state.lookups.some(u=>decodeURIComponent(u.replace(/\+/g,' ')).includes(`equals(VERIFIED_PHONE,"${data.phone}")`)));
+  state.emailContact=null; state.phoneContacts=[{email:'other@example.com',listIds:[83],emailBlacklisted:false}];
+  r=await call('challenge',{email:'new@example.com'});
+  assert.equal(r.status,409); assert.equal(state.send.length,0);
+  // A made-up challengeId does not skip the check.
+  r=await call('challenge',{challengeId:'00000000-0000-0000-0000-000000000009'});
+  assert.equal(r.status,409); assert.equal(state.send.length,0);
+});
+test('unsubscribed contacts and contacts on other lists can sign up',async()=>{
+  const {call,state}=await setup();
+  state.emailContact={email:data.email,listIds:[46,83],emailBlacklisted:true};
+  state.phoneContacts=[{email:'x@example.com',listIds:[12],emailBlacklisted:false}];
+  const r=await call('challenge');
+  assert.equal(r.status,200); assert.equal(r.sent,true); assert.equal(state.send.length,1);
+});
+test('Brevo lookup failure fails closed without sending',async()=>{
+  const {call,state}=await setup();
+  state.lookupStatus=500;
+  assert.equal((await call('challenge')).status,503);
+  state.lookupStatus=0; state.lookupNetworkFailure=true;
+  assert.equal((await call('challenge')).status,503);
+  assert.equal(state.send.length,0);
+  assert.deepEqual(state.logs.map(l=>l.event),['brevo_lookup_failed','brevo_lookup_failed','brevo_lookup_failed','brevo_lookup_failed']);
+  assert.doesNotMatch(JSON.stringify(state.logs),/example\.com|393331234567/);
+});
+test('Brevo pre-check is limited to 30 lookups per IP per hour',async()=>{
+  const {call,state}=await setup();
+  state.emailContact={email:data.email,listIds:[46],emailBlacklisted:false};
+  for(let i=0;i<30;i++) assert.equal((await call('challenge')).status,409);
+  const r=await call('challenge');
+  assert.equal(r.status,429); assert.match(r.error,/Troppe richieste/);
+  state.time+=3600001;
+  assert.equal((await call('challenge')).status,409);
 });
