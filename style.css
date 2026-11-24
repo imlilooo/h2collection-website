@@ -1245,3 +1245,16 @@ body.nlp-lock { overflow: hidden; }
 }
 .saldi-sub.saldi-sub-top { margin-top: 0.6rem; margin-bottom: 0.2rem; }
 .saldi-lastdays { display: block; font-family: 'Inter', sans-serif; font-size: clamp(1.2rem, 2.2vw, 1.8rem); font-weight: 600; letter-spacing: 0.12em; color: #fff; margin-top: 0.8rem; }
+
+/* Newsletter phone verification, shared by the page and popup. */
+.otp-phone { margin: 1rem 0; }
+.otp-phone label, .otp-panel label { display: block; margin-bottom: .4rem; font-size: .8rem; }
+.otp-note { font-size: .75rem; line-height: 1.5; opacity: .75; margin: .6rem 0; }
+.otp-panel { margin: 1rem 0; }
+.otp-panel[hidden] { display: none; }
+.otp-panel input { width: 100%; box-sizing: border-box; padding: .85rem 1rem; font: inherit; }
+.otp-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.otp-actions button { padding: .65rem; font: inherit; font-size: .75rem; cursor: pointer; }
+.otp-actions button:disabled, .nl-btn:disabled, .nlp-btn:disabled { opacity: .5; cursor: wait; }
+.otp-message { font-size: .85rem; line-height: 1.5; margin: .75rem 0; }
+.otp-panel input:focus-visible, .otp-actions button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }

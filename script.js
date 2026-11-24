@@ -42,13 +42,13 @@ mobileMenu.querySelectorAll('a').forEach(link => {
       <h2 id="nlp-title" class="nlp-title">Entra nel mondo H2 Collection<br>e ricevi <em>10€</em> sul tuo primo acquisto*</h2>
       <form class="nlp-form" novalidate>
         <div class="nlp-row">
-          <input name="nome" placeholder="Nome*" required maxlength="200" autocomplete="given-name">
-          <input name="cognome" placeholder="Cognome*" required maxlength="200" autocomplete="family-name">
+          <input name="nome" aria-label="Nome" placeholder="Nome*" required maxlength="200" autocomplete="given-name">
+          <input name="cognome" aria-label="Cognome" placeholder="Cognome*" required maxlength="200" autocomplete="family-name">
         </div>
-        <input name="email" type="email" placeholder="Email*" required autocomplete="email">
+        <input name="email" aria-label="Email" type="email" placeholder="Email*" required autocomplete="email">
         <div class="nlp-row">
-          <input name="compleanno" placeholder="Data di nascita* (GG-MM-AAAA)" required maxlength="10" inputmode="numeric" pattern="^([0-2][0-9]|3[0-1])-(0[1-9]|1[0-2])-\\d{4}$">
-          <select name="citta" required><option value="" disabled selected>Il tuo negozio*</option>${negozi.map(n => `<option>${n}</option>`).join('')}</select>
+          <input name="compleanno" aria-label="Data di nascita" placeholder="Data di nascita* (GG-MM-AAAA)" required maxlength="10" inputmode="numeric" pattern="^([0-2][0-9]|3[0-1])-(0[1-9]|1[0-2])-\\d{4}$">
+          <select name="citta" aria-label="Il tuo negozio" required><option value="" disabled selected>Il tuo negozio*</option>${negozi.map(n => `<option>${n}</option>`).join('')}</select>
         </div>
         <label class="nlp-optin"><input type="checkbox" required> <span>Acconsento a ricevere la newsletter e dichiaro di aver letto la <a href="https://www.iubenda.com/privacy-policy/18339689" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
         <button type="submit" class="nlp-btn">Iscriviti</button>
@@ -70,37 +70,13 @@ mobileMenu.querySelectorAll('a').forEach(link => {
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && wrap.classList.contains('open')) close(); });
 
   const form = wrap.querySelector('.nlp-form');
-  const msg  = wrap.querySelector('.nlp-msg');
   const dob  = form.elements.compleanno;
   dob.addEventListener('input', () => {
     const d = dob.value.replace(/\D/g, '').slice(0, 8);
     dob.value = d.length > 4 ? `${d.slice(0,2)}-${d.slice(2,4)}-${d.slice(4)}` : d.length > 2 ? `${d.slice(0,2)}-${d.slice(2)}` : d;
   });
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    msg.className = 'nlp-msg';
-    if (!form.checkValidity()) {
-      msg.textContent = 'Compila tutti i campi correttamente.';
-      msg.classList.add('err');
-      return;
-    }
-    const btn = form.querySelector('.nlp-btn');
-    btn.disabled = true; btn.textContent = 'Invio in corso…';
-    const [g, m, a] = dob.value.split('-');
-    try {
-      const res = await fetch('/.netlify/functions/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome: form.elements.nome.value.trim(),
-          cognome: form.elements.cognome.value.trim(),
-          email: form.elements.email.value.trim(),
-          compleanno: `${a}-${m}-${g}`,
-          citta: form.elements.citta.value
-        })
-      });
-      if (!res.ok) throw new Error();
+  NewsletterOtp.attach(form, () => {
       set(KEY_DONE, '1');
       wrap.querySelector('.nlp').innerHTML = `
         <button class="nlp-close" aria-label="Chiudi">&times;</button>
@@ -108,11 +84,6 @@ mobileMenu.querySelectorAll('a').forEach(link => {
         <h2 class="nlp-title">Benvenuta nel mondo<br><em>H2 Collection</em></h2>
         <p class="nlp-note">Controlla la tua email: il tuo buono da 10€ è in arrivo.</p>`;
       wrap.querySelector('.nlp-close').addEventListener('click', close);
-    } catch (_) {
-      msg.textContent = 'Iscrizione non riuscita. Riprova tra poco.';
-      msg.classList.add('err');
-      btn.disabled = false; btn.textContent = 'Iscriviti';
-    }
   });
 
   setTimeout(open, DELAY_MS);
