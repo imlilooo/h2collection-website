@@ -1257,6 +1257,9 @@ body.nlp-lock { overflow: hidden; }
 .otp-actions button { padding: .65rem; font: inherit; font-size: .75rem; cursor: pointer; }
 .otp-actions button:disabled, .nl-btn:disabled, .nlp-btn:disabled { opacity: .5; cursor: wait; }
 .otp-message { font-size: .85rem; line-height: 1.5; margin: .75rem 0; }
+.otp-email-domains { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+.otp-email-domains button { font: inherit; font-size: .75rem; line-height: 1; padding: .45rem .7rem; border: 1px solid currentColor; border-radius: 999px; background: transparent; color: inherit; opacity: .75; cursor: pointer; }
+.otp-email-domains button:hover, .otp-email-domains button:focus-visible { opacity: 1; outline: none; }
 .otp-panel input:focus-visible, .otp-actions button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 .otp-turnstile:not(:empty) { margin: .75rem 0; }
 /* Phone prefix dropdown beside the number (newsletter page and popup). */

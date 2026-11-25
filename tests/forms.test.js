@@ -172,3 +172,27 @@ for (const popup of [false,true]) {
     dom.window.close();
   });
 }
+
+for (const popup of [false,true]) {
+  test(`${popup?'popup':'newsletter page'}: domain buttons complete the email; Altro adds the @`,()=>{
+    const dom=new JSDOM(readFileSync(popup?'index.html':'newsletter.html','utf8'),{runScripts:'outside-only',url:`https://test.local/${popup?'index':'newsletter'}.html`});
+    const w=dom.window;
+    w.setInterval=()=>0; w.clearInterval=()=>{};
+    w.fetch=async()=>({ok:true,json:async()=>({})});
+    w.eval(readFileSync('newsletter-otp.js','utf8'));
+    w.eval(readFileSync('script.js','utf8'));
+    if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
+    const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
+    const email=form.elements.email||form.elements.EMAIL;
+    const buttons=[...form.querySelectorAll('.otp-email-domains button')];
+    assert.deepEqual(buttons.map(b=>b.textContent),['@gmail.com','@libero.it','@hotmail.it','@virgilio.it','@yahoo.it','Altro']);
+    assert.ok(buttons.every(b=>b.type==='button'));
+    const click=text=>buttons.find(b=>b.textContent===text).click();
+    email.value='mario.rossi'; click('@gmail.com'); assert.equal(email.value,'mario.rossi@gmail.com');
+    email.value='mario.rossi@gmial.com'; click('@libero.it'); assert.equal(email.value,'mario.rossi@libero.it');
+    click('Altro'); assert.equal(email.value,'mario.rossi@');
+    assert.equal(form.elements.email_confirm.value,'');
+    assert.equal(form.elements.email_confirm.validationMessage,'Le email non coincidono.');
+    dom.window.close();
+  });
+}
