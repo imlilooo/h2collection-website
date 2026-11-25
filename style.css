@@ -1263,7 +1263,7 @@ body.nlp-lock { overflow: hidden; }
 .otp-turnstile:not(:empty) { margin: .75rem 0; }
 /* Phone prefix dropdown beside the number (newsletter page and popup). */
 .otp-phone .otp-phone-row { display: flex; gap: .5rem; align-items: stretch; }
-.otp-phone .otp-phone-row select { flex: 0 0 6.5rem; width: 6.5rem; min-width: 0; }
+.otp-phone .otp-phone-row select { flex: 0 0 7.5rem; width: 7.5rem; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 .otp-phone .otp-phone-row input { flex: 1 1 auto; width: auto; min-width: 0; }
 /* Email suggestions: hide the browser's dropdown arrow (Chrome, Safari); the suggestion list still works. */
 input[type="email"][list]::-webkit-calendar-picker-indicator { display: none !important; opacity: 0; }
