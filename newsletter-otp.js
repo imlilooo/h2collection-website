@@ -26,7 +26,38 @@
     const option = o => `<option value="${o.dial}" data-country="${o.country}"${o.country === 'IT' ? ' selected' : ''}>${flag(o.country)} +${o.dial} · ${o.name}</option>`;
     return option(all.find(o => o.country === 'IT')) + '<option disabled>──────────</option>' + rest.map(option).join('');
   };
-  window.NewsletterOtp = { loadConfig, loadTurnstile, prefixOptions, PREFIXES };
+  // Email domains, most used first on our Brevo lists (Nov 2026); the first five are suggested
+  // straight away, the rest once the customer starts typing after the @.
+  const EMAIL_DOMAINS = ['gmail.com', 'libero.it', 'hotmail.it', 'virgilio.it', 'yahoo.it', 'alice.it', 'tiscali.it',
+    'live.it', 'hotmail.com', 'icloud.com', 'outlook.it', 'outlook.com', 'yahoo.com', 'inwind.it', 'tim.it', 'email.it', 'fastwebnet.it'];
+  // Right domain on the wrong ending (too far apart for the edit-distance check below).
+  const DOMAIN_FIXES = { 'gmail.it':'gmail.com', 'gmail.co.it':'gmail.com', 'googlemail.it':'gmail.com', 'libero.com':'libero.it',
+    'virgilio.com':'virgilio.it', 'alice.com':'alice.it', 'tiscali.com':'tiscali.it', 'icloud.it':'icloud.com' };
+  const editDistance = (a, b) => {
+    const row = Array.from({length: b.length + 1}, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+      let diagonal = row.at(0); row.splice(0, 1, i);
+      for (let j = 1; j <= b.length; j++) {
+        const above = row.at(j);
+        row.splice(j, 1, Math.min(above + 1, row.at(j - 1) + 1, diagonal + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1)));
+        diagonal = above;
+      }
+    }
+    return row.at(b.length);
+  };
+  // The domain the customer most likely meant, or null when theirs is fine or unknown.
+  const likelyDomain = domain => {
+    if (!domain || EMAIL_DOMAINS.includes(domain)) return null;
+    if (Object.prototype.hasOwnProperty.call(DOMAIN_FIXES, domain)) return DOMAIN_FIXES[domain];
+    if (!domain.includes('.')) return null;
+    let best = null, bestDistance = 3;
+    for (const known of EMAIL_DOMAINS) {
+      const distance = editDistance(domain, known);
+      if (distance < bestDistance) { best = known; bestDistance = distance; }
+    }
+    return best;
+  };
+  window.NewsletterOtp = { loadConfig, loadTurnstile, prefixOptions, PREFIXES, EMAIL_DOMAINS, likelyDomain };
 })();
 Object.assign(window.NewsletterOtp, {
   attach(form, onSuccess) {
@@ -53,27 +84,37 @@ Object.assign(window.NewsletterOtp, {
     prefix.addEventListener('blur', compactPrefix);
     form.addEventListener('reset', () => setTimeout(compactPrefix, 0));
     compactPrefix();
-    // "Conferma email" right under the email field: must match it before any code is requested.
+    // Email help: browser suggestions that complete the domain (the most used domains on our Brevo
+    // lists, in order), and a one-tap "Forse intendevi …?" fix when the domain looks like a typo.
     const emailInput = form.elements.email || form.elements.EMAIL;
-    const emailConfirm = document.createElement('input');
-    Object.assign(emailConfirm, { type:'email', name:'email_confirm', id:`email-confirm-${suffix}`, required:true, autocomplete:'off' });
-    if (popup) {
-      emailConfirm.placeholder = 'Conferma email*';
-      emailConfirm.setAttribute('aria-label', 'Conferma email');
-      emailInput.after(emailConfirm);
-    } else {
-      const wrap = document.createElement('div');
-      wrap.className = 'nl-field';
-      wrap.innerHTML = `<label for="email-confirm-${suffix}">Conferma e-mail</label>`;
-      emailConfirm.placeholder = 'Ripeti la tua email';
-      wrap.appendChild(emailConfirm);
-      (emailInput.closest('.nl-field') || emailInput).after(wrap);
-    }
-    const checkEmailConfirm = () => emailConfirm.setCustomValidity(
-      emailConfirm.value.trim().toLowerCase() === emailInput.value.trim().toLowerCase() ? '' : 'Le email non coincidono.');
-    emailInput.addEventListener('input', checkEmailConfirm);
-    emailConfirm.addEventListener('input', checkEmailConfirm);
-    form.addEventListener('reset', () => setTimeout(checkEmailConfirm, 0));
+    emailInput.setAttribute('autocomplete', 'email');
+    const suggestions = document.createElement('datalist');
+    suggestions.id = `email-domains-${suffix}`;
+    emailInput.setAttribute('list', suggestions.id);
+    const hint = document.createElement('p');
+    hint.className = 'otp-email-hint';
+    hint.hidden = true;
+    hint.innerHTML = '<button type="button"></button>';
+    emailInput.after(suggestions, hint);
+    const updateEmailHelp = () => {
+      const typed = emailInput.value.trim();
+      const at = typed.indexOf('@');
+      const local = at < 0 ? typed : typed.slice(0, at), domain = at < 0 ? '' : typed.slice(at + 1).toLowerCase();
+      const domains = !local || /\s/.test(local) ? [] : at < 0 ? window.NewsletterOtp.EMAIL_DOMAINS.slice(0, 5) : window.NewsletterOtp.EMAIL_DOMAINS.filter(d => d.startsWith(domain) && d !== domain);
+      suggestions.replaceChildren(...domains.map(d => Object.assign(document.createElement('option'), {value:`${local}@${d}`})));
+      const fix = at > 0 ? window.NewsletterOtp.likelyDomain(domain) : null;
+      hint.hidden = !fix;
+      // Built as text nodes: the typed name is never read as HTML.
+      if (fix) hint.firstChild.replaceChildren('Forse intendevi ', Object.assign(document.createElement('strong'), {textContent:`${local}@${fix}`}), '?');
+      hint.dataset.fix = fix ? `${local}@${fix}` : '';
+    };
+    emailInput.addEventListener('input', updateEmailHelp);
+    form.addEventListener('reset', () => setTimeout(updateEmailHelp, 0));
+    hint.addEventListener('click', () => {
+      emailInput.value = hint.dataset.fix;
+      emailInput.dispatchEvent(new Event('input', {bubbles:true}));
+      emailInput.focus();
+    });
     const panel = document.createElement('div');
     panel.className = 'otp-panel';
     panel.hidden = true;
