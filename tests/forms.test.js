@@ -205,3 +205,26 @@ for (const popup of [false,true]) {
     dom.window.close();
   });
 }
+
+for (const popup of [false,true]) {
+  test(`${popup?'popup':'newsletter page'}: success message mentions the wait and the spam folder`,async()=>{
+    const dom=new JSDOM(readFileSync(popup?'index.html':'newsletter.html','utf8'),{runScripts:'outside-only',url:`https://test.local/${popup?'index':'newsletter'}.html`});
+    const w=dom.window;
+    w.setInterval=()=>0; w.clearInterval=()=>{};
+    w.fetch=async (url,options)=>{
+      if(options.method==='GET') return {ok:true,json:async()=>({turnstileSiteKey:null})};
+      return url.endsWith('challenge') ? {ok:true,json:async()=>({challengeId:'id',sent:true,channel:'sms',channels:['sms'],expiresIn:300,resendAfter:60,smsAfter:60})} : {ok:true,json:async()=>({success:true})};
+    };
+    w.eval(readFileSync('newsletter-otp.js','utf8'));
+    w.eval(readFileSync('script.js','utf8'));
+    if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
+    const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
+    const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
+    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+    const submit=async()=>{form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setTimeout(r,10));};
+    await submit(); form.elements.otp.value='123456'; await submit();
+    const text=popup ? w.document.querySelector('.nlp').textContent : form.querySelector('.otp-message').textContent;
+    assert.match(text,/entro qualche minuto/); assert.match(text,/spam \/ posta indesiderata/);
+    dom.window.close();
+  });
+}

@@ -239,7 +239,7 @@ Object.assign(window.NewsletterOtp, {
         if (!challenge) return send();
         await api('subscribe', {...details(), challengeId:challenge.id, otp:otp.value.trim()});
         clearInterval(timer); reset(); form.reset();
-        message.textContent = 'Iscrizione completata — benvenuta nel club!';
+        message.textContent = 'Iscrizione completata — benvenuta nel club! La nostra email arriverà entro qualche minuto: se non la trovi, controlla anche nella cartella spam / posta indesiderata.';
         onSuccess();
       });
     });
