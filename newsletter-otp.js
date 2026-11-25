@@ -63,6 +63,25 @@ Object.assign(window.NewsletterOtp, {
     emailInput.addEventListener('input', checkEmailConfirm);
     emailConfirm.addEventListener('input', checkEmailConfirm);
     form.addEventListener('reset', () => setTimeout(checkEmailConfirm, 0));
+    // Quick domain buttons under the email: the 5 most used domains on our Brevo lists (about 89% of
+    // subscribers) plus "Altro", which adds the @ so the customer types their own domain.
+    // Not offered for "Conferma email", which must be typed to catch mistakes.
+    const domains = document.createElement('div');
+    domains.className = 'otp-email-domains';
+    domains.setAttribute('role', 'group');
+    domains.setAttribute('aria-label', 'Completa l\u2019indirizzo email');
+    domains.innerHTML = ['gmail.com', 'libero.it', 'hotmail.it', 'virgilio.it', 'yahoo.it']
+      .map(domain => `<button type="button" data-domain="${domain}">@${domain}</button>`).join('')
+      + '<button type="button" data-domain="">Altro</button>';
+    emailInput.after(domains);
+    domains.addEventListener('click', event => {
+      const button = event.target.closest('button[data-domain]');
+      if (!button) return;
+      const local = emailInput.value.split('@')[0].trim();
+      emailInput.value = `${local}@${button.dataset.domain}`;
+      emailInput.dispatchEvent(new Event('input', {bubbles:true}));
+      emailInput.focus();
+    });
     const panel = document.createElement('div');
     panel.className = 'otp-panel';
     panel.hidden = true;
