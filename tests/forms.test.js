@@ -2,6 +2,8 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
 const { JSDOM } = require('jsdom');
+// Types into the email picker (name @ domain) like a customer would; a full address is split automatically.
+const typeEmail=(w,form,which,value)=>{const el=form.querySelector(which==='confirm'?'input[id^=email-confirm-]':'input.otp-email-local:not([id^=email-confirm-])'); el.value=value; el.dispatchEvent(new w.Event('input',{bubbles:true}));};
 for (const popup of [false,true]) {
   test(`${popup?'popup':'newsletter page'}: OTP required, errors preserve form, changes reset verification`,async()=>{
     const dom=new JSDOM(readFileSync(popup?'index.html':'newsletter.html','utf8'),{runScripts:'outside-only',url:`https://test.local/${popup?'index':'newsletter'}.html`});
@@ -17,7 +19,7 @@ for (const popup of [false,true]) {
     if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
     const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
     const set=(name,value)=>{const el=form.elements[name]||form.elements[name.toUpperCase()]; el.value=value;};
-    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+    set('nome','Ada');set('cognome','Rossi');typeEmail(w,form,'main','test@example.com');typeEmail(w,form,'confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
     const submit=async()=>{form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setImmediate(r));};
     await submit(); assert.equal(calls.length,1);assert.ok(calls[0].url.endsWith('challenge'));
     assert.equal(form.elements.otp.required,true); assert.equal(form.querySelector('[data-channel=sms]').disabled,true);
@@ -46,7 +48,7 @@ test('SMS-only server: first send has no channel and WhatsApp button is hidden',
   const form=w.document.querySelector('#sib-form');
   assert.equal(form.querySelector('[type=submit]').textContent,'Ricevi il codice');
   const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
-  set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+  set('nome','Ada');set('cognome','Rossi');typeEmail(w,form,'main','test@example.com');typeEmail(w,form,'confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
   form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setImmediate(r));
   assert.equal(calls.length,1); assert.equal(calls[0].body.channel,undefined);
   assert.equal(form.querySelector('[data-channel=whatsapp]').hidden,true);
@@ -67,7 +69,7 @@ for (const popup of [false,true]) {
     if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
     const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
     const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
-    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+    set('nome','Ada');set('cognome','Rossi');typeEmail(w,form,'main','test@example.com');typeEmail(w,form,'confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
     form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setImmediate(r));
     assert.match(form.querySelector('.otp-message').textContent,/già iscritto alla newsletter/);
     assert.equal(form.querySelector('.otp-panel').hidden,true);
@@ -93,7 +95,7 @@ test('Turnstile on: the form gets a fresh token for each code request',async()=>
   w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
   const form=w.document.querySelector('#sib-form');
   const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
-  set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+  set('nome','Ada');set('cognome','Rossi');typeEmail(w,form,'main','test@example.com');typeEmail(w,form,'confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
   const settle=()=>new Promise(r=>setTimeout(r,20));
   form.dispatchEvent(new w.Event('submit',{cancelable:true})); await settle();
   assert.equal(widget.sitekey,'site-key'); assert.equal(widget.el.className,'otp-turnstile');
@@ -102,36 +104,6 @@ test('Turnstile on: the form gets a fresh token for each code request',async()=>
   assert.equal(widget.resets,1); assert.equal(calls[1].body.turnstileToken,'token-2');
   dom.window.close();
 });
-
-for (const popup of [false,true]) {
-  test(`${popup?'popup':'newsletter page'}: Conferma email must match before a code is requested`,async()=>{
-    const dom=new JSDOM(readFileSync(popup?'index.html':'newsletter.html','utf8'),{runScripts:'outside-only',url:`https://test.local/${popup?'index':'newsletter'}.html`});
-    const w=dom.window, calls=[];
-    w.setInterval=()=>0; w.clearInterval=()=>{};
-    w.fetch=async (url,options)=>{
-      if(options.method==='GET') return {ok:true,json:async()=>({turnstileSiteKey:null})};
-      calls.push({url,body:JSON.parse(options.body)});
-      return {ok:true,json:async()=>({challengeId:'id',sent:true,channel:'sms',channels:['sms'],expiresIn:300,resendAfter:60,smsAfter:60})};
-    };
-    w.eval(readFileSync('newsletter-otp.js','utf8'));
-    w.eval(readFileSync('script.js','utf8'));
-    if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
-    const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
-    const confirm=form.elements.email_confirm;
-    assert.ok(confirm, 'confirm field exists'); assert.equal(confirm.required,true);
-    const email=form.elements.email||form.elements.EMAIL;
-    assert.equal(confirm.compareDocumentPosition(email) & w.Node.DOCUMENT_POSITION_PRECEDING, w.Node.DOCUMENT_POSITION_PRECEDING, 'confirm comes after email');
-    const set=(name,value)=>{const el=form.elements[name]||form.elements[name.toUpperCase()]; el.value=value; el.dispatchEvent(new w.Event('input',{bubbles:true}));};
-    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','tset@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
-    const submit=async()=>{form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setTimeout(r,10));};
-    await submit();
-    assert.equal(calls.length,0); assert.equal(confirm.validationMessage,'Le email non coincidono.');
-    set('email_confirm',' Test@Example.com ');
-    await submit();
-    assert.equal(calls.length,1); assert.equal(calls[0].body.email,'test@example.com'); assert.equal(calls[0].body.email_confirm,undefined);
-    dom.window.close();
-  });
-}
 
 test('phone prefix list matches libphonenumber and Italy +39 is first and selected',()=>{
   const { getCountries, getCountryCallingCode } = require('libphonenumber-js/max');
@@ -159,7 +131,7 @@ for (const popup of [false,true]) {
     if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
     const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
     const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
-    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');form.querySelector('[type=checkbox]').checked=true;
+    set('nome','Ada');set('cognome','Rossi');typeEmail(w,form,'main','test@example.com');typeEmail(w,form,'confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');form.querySelector('[type=checkbox]').checked=true;
     const submit=async()=>{form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setTimeout(r,10));};
     set('phone','333 123 4567'); await submit();
     assert.equal(calls.at(-1).phone,'+393331234567');
@@ -173,26 +145,59 @@ for (const popup of [false,true]) {
   });
 }
 
+const pickerForm=popup=>{
+  const dom=new JSDOM(readFileSync(popup?'index.html':'newsletter.html','utf8'),{runScripts:'outside-only',url:`https://test.local/${popup?'index':'newsletter'}.html`});
+  const w=dom.window, calls=[];
+  w.setInterval=()=>0; w.clearInterval=()=>{};
+  w.fetch=async (url,options)=>{
+    if(options.method==='GET') return {ok:true,json:async()=>({turnstileSiteKey:null})};
+    calls.push(JSON.parse(options.body));
+    return {ok:false,json:async()=>({error:'stop'})};
+  };
+  w.eval(readFileSync('newsletter-otp.js','utf8'));
+  w.eval(readFileSync('script.js','utf8'));
+  if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
+  const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
+  const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
+  set('nome','Ada');set('cognome','Rossi');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+  const submit=async()=>{form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setTimeout(r,10));};
+  return {dom,w,form,calls,submit};
+};
 for (const popup of [false,true]) {
-  test(`${popup?'popup':'newsletter page'}: domain buttons complete the email; Altro adds the @`,()=>{
-    const dom=new JSDOM(readFileSync(popup?'index.html':'newsletter.html','utf8'),{runScripts:'outside-only',url:`https://test.local/${popup?'index':'newsletter'}.html`});
-    const w=dom.window;
-    w.setInterval=()=>0; w.clearInterval=()=>{};
-    w.fetch=async()=>({ok:true,json:async()=>({})});
-    w.eval(readFileSync('newsletter-otp.js','utf8'));
-    w.eval(readFileSync('script.js','utf8'));
-    if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
-    const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
-    const email=form.elements.email||form.elements.EMAIL;
-    const buttons=[...form.querySelectorAll('.otp-email-domains button')];
-    assert.deepEqual(buttons.map(b=>b.textContent),['@gmail.com','@libero.it','@hotmail.it','@virgilio.it','@yahoo.it','Altro']);
-    assert.ok(buttons.every(b=>b.type==='button'));
-    const click=text=>buttons.find(b=>b.textContent===text).click();
-    email.value='mario.rossi'; click('@gmail.com'); assert.equal(email.value,'mario.rossi@gmail.com');
-    email.value='mario.rossi@gmial.com'; click('@libero.it'); assert.equal(email.value,'mario.rossi@libero.it');
-    click('Altro'); assert.equal(email.value,'mario.rossi@');
-    assert.equal(form.elements.email_confirm.value,'');
-    assert.equal(form.elements.email_confirm.validationMessage,'Le email non coincidono.');
+  test(`${popup?'popup':'newsletter page'}: email and Conferma email are name + @ + domain dropdown`,async()=>{
+    const {dom,w,form,calls,submit}=pickerForm(popup);
+    const rows=[...form.querySelectorAll('.otp-email-row')];
+    assert.equal(rows.length,2);
+    for (const row of rows) {
+      assert.equal(row.querySelector('.otp-email-at').textContent,'@');
+      const options=[...row.querySelector('select').options].map(o=>o.textContent);
+      assert.deepEqual(options,['dominio','gmail.com','libero.it','hotmail.it','virgilio.it','yahoo.it','Altro…']);
+      assert.equal(row.querySelector('select').value,'');
+      assert.equal(row.querySelector('.otp-email-other').hidden,true);
+    }
+    const [main,confirm]=rows;
+    const pick=(row,value)=>{const s=row.querySelector('select'); s.value=value; s.dispatchEvent(new w.Event('change',{bubbles:true}));};
+    const type=(el,value)=>{el.value=value; el.dispatchEvent(new w.Event('input',{bubbles:true}));};
+    // Nothing chosen yet: blocked, first missing part flagged.
+    type(main.querySelector('.otp-email-local'),'mario.rossi'); await submit();
+    assert.equal(calls.length,0); assert.match(main.querySelector('select').validationMessage,/dominio/);
+    pick(main,'libero.it');
+    type(confirm.querySelector('.otp-email-local'),'mario.rossi'); pick(confirm,'gmail.com'); await submit();
+    assert.equal(calls.length,0); assert.equal(confirm.querySelector('.otp-email-local').validationMessage,'Le email non coincidono.');
+    pick(confirm,'libero.it'); await submit();
+    assert.equal(calls.length,1); assert.equal(calls[0].email,'mario.rossi@libero.it'); assert.equal(calls[0].email_confirm,undefined);
+    // Altro: a domain field appears; a pasted full address is split into name and domain.
+    pick(main,'other'); assert.equal(main.querySelector('.otp-email-other').hidden,false);
+    type(main.querySelector('.otp-email-local'),'Anna.B@Alice.it');
+    assert.equal(main.querySelector('.otp-email-local').value,'Anna.B'); assert.equal(main.querySelector('.otp-email-other').value,'alice.it');
+    type(confirm.querySelector('.otp-email-local'),'anna.b@alice.it');
+    assert.equal(confirm.querySelector('select').value,'other');
+    await submit();
+    assert.equal(calls.length,2); assert.equal(calls[1].email,'Anna.B@alice.it');
+    type(confirm.querySelector('.otp-email-local'),'anna.b@gmail.com');
+    assert.equal(confirm.querySelector('select').value,'gmail.com'); assert.equal(confirm.querySelector('.otp-email-other').hidden,true);
+    form.reset(); await new Promise(r=>setTimeout(r,5));
+    assert.equal(main.querySelector('select').value,''); assert.equal((form.elements.email||form.elements.EMAIL).value,'');
     dom.window.close();
   });
 }

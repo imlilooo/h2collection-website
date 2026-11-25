@@ -42,46 +42,71 @@ Object.assign(window.NewsletterOtp, {
       </div>
       <p id="phone-note-${suffix}" class="otp-note">Riceverai un codice di verifica per confermare il numero. Il numero verificato sarà salvato insieme al contatto newsletter.</p>`;
     form.insertBefore(field, submit);
-    // "Conferma email" right under the email field: must match it before any code is requested.
-    const emailInput = form.elements.email || form.elements.EMAIL;
-    const emailConfirm = document.createElement('input');
-    Object.assign(emailConfirm, { type:'email', name:'email_confirm', id:`email-confirm-${suffix}`, required:true, autocomplete:'off' });
-    if (popup) {
-      emailConfirm.placeholder = 'Conferma email*';
-      emailConfirm.setAttribute('aria-label', 'Conferma email');
-      emailInput.after(emailConfirm);
-    } else {
-      const wrap = document.createElement('div');
-      wrap.className = 'nl-field';
-      wrap.innerHTML = `<label for="email-confirm-${suffix}">Conferma e-mail</label>`;
-      emailConfirm.placeholder = 'Ripeti la tua email';
-      wrap.appendChild(emailConfirm);
-      (emailInput.closest('.nl-field') || emailInput).after(wrap);
+    // Email entry = name + a fixed "@" + a domain dropdown: the 5 most used domains on our Brevo lists
+    // (about 89% of subscribers), then "Altro…" to type any other domain. Used for the email and for
+    // "Conferma email"; each writes the full address into a hidden field that the rest of the form reads.
+    const EMAIL_DOMAINS = ['gmail.com', 'libero.it', 'hotmail.it', 'virgilio.it', 'yahoo.it'];
+    function emailPicker(hidden, { id, label, placeholder, autocomplete }) {
+      const row = document.createElement('div');
+      row.className = 'otp-email-row';
+      row.innerHTML = `<input id="${id}" class="otp-email-local" type="text" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="${autocomplete}" maxlength="64" placeholder="${placeholder}" aria-label="${label}: nome prima della @">
+        <span class="otp-email-at" aria-hidden="true">@</span>
+        <select class="otp-email-domain" aria-label="${label}: dominio"><option value="" disabled selected>dominio</option>${EMAIL_DOMAINS.map(d => `<option value="${d}">${d}</option>`).join('')}<option value="other">Altro…</option></select>
+        <input class="otp-email-other" type="text" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="190" placeholder="altro dominio, es. alice.it" aria-label="${label}: altro dominio" hidden>`;
+      const local = row.querySelector('.otp-email-local'), select = row.querySelector('select'), other = row.querySelector('.otp-email-other');
+      const domain = () => select.value === 'other' ? other.value.trim().replace(/^@/, '') : select.value;
+      const sync = () => {
+        other.hidden = select.value !== 'other';
+        const name = local.value.trim(), d = domain();
+        hidden.value = name && d ? `${name}@${d}` : '';
+      };
+      local.addEventListener('input', () => {
+        // A pasted or autofilled full address is split into name and domain.
+        const at = local.value.indexOf('@');
+        if (at >= 0) {
+          const d = local.value.slice(at + 1).trim().toLowerCase();
+          local.value = local.value.slice(0, at);
+          if (EMAIL_DOMAINS.includes(d)) select.value = d;
+          else if (d) { select.value = 'other'; other.value = d; }
+        }
+        sync();
+      });
+      select.addEventListener('change', () => { sync(); if (select.value === 'other') other.focus(); });
+      other.addEventListener('input', sync);
+      form.addEventListener('reset', () => setTimeout(sync, 0));
+      // Marks the first part that needs fixing; true when the address is complete.
+      const check = () => {
+        [local, select, other].forEach(el => el.setCustomValidity(''));
+        if (!local.value.trim()) { local.setCustomValidity('Inserisci la prima parte della tua email (prima della @).'); return false; }
+        if (!select.value) { select.setCustomValidity('Scegli il dominio della tua email.'); return false; }
+        if (select.value === 'other' && !/^[^\s@]+\.[^\s@]+$/.test(domain())) { other.setCustomValidity('Inserisci il dominio, es. alice.it.'); return false; }
+        return true;
+      };
+      return { row, local, check };
     }
-    const checkEmailConfirm = () => emailConfirm.setCustomValidity(
-      emailConfirm.value.trim().toLowerCase() === emailInput.value.trim().toLowerCase() ? '' : 'Le email non coincidono.');
-    emailInput.addEventListener('input', checkEmailConfirm);
-    emailConfirm.addEventListener('input', checkEmailConfirm);
-    form.addEventListener('reset', () => setTimeout(checkEmailConfirm, 0));
-    // Quick domain buttons under the email: the 5 most used domains on our Brevo lists (about 89% of
-    // subscribers) plus "Altro", which adds the @ so the customer types their own domain.
-    // Not offered for "Conferma email", which must be typed to catch mistakes.
-    const domains = document.createElement('div');
-    domains.className = 'otp-email-domains';
-    domains.setAttribute('role', 'group');
-    domains.setAttribute('aria-label', 'Completa l\u2019indirizzo email');
-    domains.innerHTML = ['gmail.com', 'libero.it', 'hotmail.it', 'virgilio.it', 'yahoo.it']
-      .map(domain => `<button type="button" data-domain="${domain}">@${domain}</button>`).join('')
-      + '<button type="button" data-domain="">Altro</button>';
-    emailInput.after(domains);
-    domains.addEventListener('click', event => {
-      const button = event.target.closest('button[data-domain]');
-      if (!button) return;
-      const local = emailInput.value.split('@')[0].trim();
-      emailInput.value = `${local}@${button.dataset.domain}`;
-      emailInput.dispatchEvent(new Event('input', {bubbles:true}));
-      emailInput.focus();
-    });
+    const emailInput = form.elements.email || form.elements.EMAIL;
+    emailInput.type = 'hidden';
+    emailInput.required = false;
+    const mainEmail = emailPicker(emailInput, { id:`email-${suffix}`, label:'Email', placeholder: popup ? 'Email*' : 'nome', autocomplete:'email' });
+    emailInput.after(mainEmail.row);
+    const emailLabel = emailInput.closest('.nl-field')?.querySelector('label');
+    if (emailLabel) emailLabel.htmlFor = `email-${suffix}`;
+    // "Conferma email" right under the email: same picker, must match before any code is requested.
+    const emailConfirm = document.createElement('input');
+    Object.assign(emailConfirm, { type:'hidden', name:'email_confirm' });
+    const confirmEmail = emailPicker(emailConfirm, { id:`email-confirm-${suffix}`, label:'Conferma email', placeholder: popup ? 'Conferma email*' : 'nome', autocomplete:'off' });
+    const confirmWrap = document.createElement('div');
+    if (!popup) {
+      confirmWrap.className = 'nl-field';
+      confirmWrap.innerHTML = `<label for="email-confirm-${suffix}">Conferma e-mail</label>`;
+    }
+    confirmWrap.append(emailConfirm, confirmEmail.row);
+    (popup ? mainEmail.row : (emailInput.closest('.nl-field') || mainEmail.row)).after(confirmWrap);
+    function checkEmails() {
+      const mainOk = mainEmail.check(), confirmOk = confirmEmail.check();
+      if (mainOk && confirmOk && emailInput.value.toLowerCase() !== emailConfirm.value.toLowerCase())
+        confirmEmail.local.setCustomValidity('Le email non coincidono.');
+    }
     const panel = document.createElement('div');
     panel.className = 'otp-panel';
     panel.hidden = true;
@@ -201,6 +226,7 @@ Object.assign(window.NewsletterOtp, {
     buttons.forEach(button => button.addEventListener('click', () => run(() => send(button.dataset.channel))));
     form.addEventListener('submit', event => {
       event.preventDefault();
+      checkEmails();
       if (!form.reportValidity()) return;
       run(async () => {
         if (!challenge) return send();
