@@ -28,6 +28,27 @@ Object.assign(window.NewsletterOtp, {
       <input id="phone-${suffix}" name="phone" type="tel" value="+39 " required autocomplete="tel" maxlength="30" aria-describedby="phone-note-${suffix}">
       <p id="phone-note-${suffix}" class="otp-note">Riceverai un codice di verifica per confermare il numero. Il numero verificato sarà salvato insieme al contatto newsletter.</p>`;
     form.insertBefore(field, submit);
+    // "Conferma email" right under the email field: must match it before any code is requested.
+    const emailInput = form.elements.email || form.elements.EMAIL;
+    const emailConfirm = document.createElement('input');
+    Object.assign(emailConfirm, { type:'email', name:'email_confirm', id:`email-confirm-${suffix}`, required:true, autocomplete:'off' });
+    if (popup) {
+      emailConfirm.placeholder = 'Conferma email*';
+      emailConfirm.setAttribute('aria-label', 'Conferma email');
+      emailInput.after(emailConfirm);
+    } else {
+      const wrap = document.createElement('div');
+      wrap.className = 'nl-field';
+      wrap.innerHTML = `<label for="email-confirm-${suffix}">Conferma e-mail</label>`;
+      emailConfirm.placeholder = 'Ripeti la tua email';
+      wrap.appendChild(emailConfirm);
+      (emailInput.closest('.nl-field') || emailInput).after(wrap);
+    }
+    const checkEmailConfirm = () => emailConfirm.setCustomValidity(
+      emailConfirm.value.trim().toLowerCase() === emailInput.value.trim().toLowerCase() ? '' : 'Le email non coincidono.');
+    emailInput.addEventListener('input', checkEmailConfirm);
+    emailConfirm.addEventListener('input', checkEmailConfirm);
+    form.addEventListener('reset', () => setTimeout(checkEmailConfirm, 0));
     const panel = document.createElement('div');
     panel.className = 'otp-panel';
     panel.hidden = true;
