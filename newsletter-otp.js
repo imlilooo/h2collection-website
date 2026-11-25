@@ -42,6 +42,17 @@ Object.assign(window.NewsletterOtp, {
       </div>
       <p id="phone-note-${suffix}" class="otp-note">Riceverai un codice di verifica per confermare il numero. Il numero verificato sarà salvato insieme al contatto newsletter.</p>`;
     form.insertBefore(field, submit);
+    // Closed dropdown shows only flag + prefix ("🇮🇹 +39"); the open list keeps the country names.
+    const prefix = field.querySelector('select');
+    [...prefix.options].forEach(o => { o.dataset.full = o.text; });
+    const expandPrefix = () => [...prefix.options].forEach(o => { if (o.dataset.full) o.text = o.dataset.full; });
+    const compactPrefix = () => { expandPrefix(); const o = prefix.options[prefix.selectedIndex]; if (o && o.dataset.full) o.text = o.dataset.full.split(' · ')[0]; };
+    prefix.addEventListener('mousedown', expandPrefix);
+    prefix.addEventListener('focus', expandPrefix);
+    prefix.addEventListener('change', compactPrefix);
+    prefix.addEventListener('blur', compactPrefix);
+    form.addEventListener('reset', () => setTimeout(compactPrefix, 0));
+    compactPrefix();
     // "Conferma email" right under the email field: must match it before any code is requested.
     const emailInput = form.elements.email || form.elements.EMAIL;
     const emailConfirm = document.createElement('input');

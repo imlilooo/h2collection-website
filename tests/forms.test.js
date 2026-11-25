@@ -172,3 +172,22 @@ for (const popup of [false,true]) {
     dom.window.close();
   });
 }
+
+test('closed prefix dropdown shows only flag and prefix; the open list keeps country names',()=>{
+  const dom=new JSDOM(readFileSync('newsletter.html','utf8'),{runScripts:'outside-only',url:'https://test.local/newsletter.html'});
+  const w=dom.window;
+  w.eval(readFileSync('newsletter-otp.js','utf8'));
+  w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
+  const s=w.document.querySelector('#sib-form select[name=phone_prefix]');
+  const selectedText=()=>s.options[s.selectedIndex].text;
+  assert.equal(selectedText(),'🇮🇹 +39');
+  assert.match(s.options[2].text,/ · Afghanistan$/);
+  s.dispatchEvent(new w.Event('focus'));
+  assert.equal(selectedText(),'🇮🇹 +39 · Italia');
+  const gb=[...s.options].findIndex(o=>o.dataset.country==='GB');
+  s.selectedIndex=gb; s.dispatchEvent(new w.Event('change',{bubbles:true}));
+  assert.equal(selectedText(),'🇬🇧 +44');
+  assert.equal(s.options[0].text,'🇮🇹 +39 · Italia');
+  assert.equal(s.value,'44');
+  dom.window.close();
+});
