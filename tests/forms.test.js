@@ -17,7 +17,7 @@ for (const popup of [false,true]) {
     if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
     const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
     const set=(name,value)=>{const el=form.elements[name]||form.elements[name.toUpperCase()]; el.value=value;};
-    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
     const submit=async()=>{form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setImmediate(r));};
     await submit(); assert.equal(calls.length,1);assert.ok(calls[0].url.endsWith('challenge'));
     assert.equal(form.elements.otp.required,true); assert.equal(form.querySelector('[data-channel=sms]').disabled,true);
@@ -46,7 +46,7 @@ test('SMS-only server: first send has no channel and WhatsApp button is hidden',
   const form=w.document.querySelector('#sib-form');
   assert.equal(form.querySelector('[type=submit]').textContent,'Ricevi il codice');
   const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
-  set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+  set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
   form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setImmediate(r));
   assert.equal(calls.length,1); assert.equal(calls[0].body.channel,undefined);
   assert.equal(form.querySelector('[data-channel=whatsapp]').hidden,true);
@@ -67,7 +67,7 @@ for (const popup of [false,true]) {
     if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
     const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
     const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
-    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
     form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setImmediate(r));
     assert.match(form.querySelector('.otp-message').textContent,/già iscritto alla newsletter/);
     assert.equal(form.querySelector('.otp-panel').hidden,true);
@@ -93,7 +93,7 @@ test('Turnstile on: the form gets a fresh token for each code request',async()=>
   w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
   const form=w.document.querySelector('#sib-form');
   const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
-  set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
+  set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
   const settle=()=>new Promise(r=>setTimeout(r,20));
   form.dispatchEvent(new w.Event('submit',{cancelable:true})); await settle();
   assert.equal(widget.sitekey,'site-key'); assert.equal(widget.el.className,'otp-turnstile');
@@ -102,36 +102,6 @@ test('Turnstile on: the form gets a fresh token for each code request',async()=>
   assert.equal(widget.resets,1); assert.equal(calls[1].body.turnstileToken,'token-2');
   dom.window.close();
 });
-
-for (const popup of [false,true]) {
-  test(`${popup?'popup':'newsletter page'}: Conferma email must match before a code is requested`,async()=>{
-    const dom=new JSDOM(readFileSync(popup?'index.html':'newsletter.html','utf8'),{runScripts:'outside-only',url:`https://test.local/${popup?'index':'newsletter'}.html`});
-    const w=dom.window, calls=[];
-    w.setInterval=()=>0; w.clearInterval=()=>{};
-    w.fetch=async (url,options)=>{
-      if(options.method==='GET') return {ok:true,json:async()=>({turnstileSiteKey:null})};
-      calls.push({url,body:JSON.parse(options.body)});
-      return {ok:true,json:async()=>({challengeId:'id',sent:true,channel:'sms',channels:['sms'],expiresIn:300,resendAfter:60,smsAfter:60})};
-    };
-    w.eval(readFileSync('newsletter-otp.js','utf8'));
-    w.eval(readFileSync('script.js','utf8'));
-    if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
-    const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
-    const confirm=form.elements.email_confirm;
-    assert.ok(confirm, 'confirm field exists'); assert.equal(confirm.required,true);
-    const email=form.elements.email||form.elements.EMAIL;
-    assert.equal(confirm.compareDocumentPosition(email) & w.Node.DOCUMENT_POSITION_PRECEDING, w.Node.DOCUMENT_POSITION_PRECEDING, 'confirm comes after email');
-    const set=(name,value)=>{const el=form.elements[name]||form.elements[name.toUpperCase()]; el.value=value; el.dispatchEvent(new w.Event('input',{bubbles:true}));};
-    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','tset@example.com');set('compleanno','01-01-1990');set('citta','Palermo');set('phone','+393331234567');form.querySelector('[type=checkbox]').checked=true;
-    const submit=async()=>{form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setTimeout(r,10));};
-    await submit();
-    assert.equal(calls.length,0); assert.equal(confirm.validationMessage,'Le email non coincidono.');
-    set('email_confirm',' Test@Example.com ');
-    await submit();
-    assert.equal(calls.length,1); assert.equal(calls[0].body.email,'test@example.com'); assert.equal(calls[0].body.email_confirm,undefined);
-    dom.window.close();
-  });
-}
 
 test('phone prefix list matches libphonenumber and Italy +39 is first and selected',()=>{
   const { getCountries, getCountryCallingCode } = require('libphonenumber-js/max');
@@ -159,7 +129,7 @@ for (const popup of [false,true]) {
     if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
     const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
     const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
-    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');form.querySelector('[type=checkbox]').checked=true;
+    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');form.querySelector('[type=checkbox]').checked=true;
     const submit=async()=>{form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setTimeout(r,10));};
     set('phone','333 123 4567'); await submit();
     assert.equal(calls.at(-1).phone,'+393331234567');
@@ -173,8 +143,18 @@ for (const popup of [false,true]) {
   });
 }
 
+test('likely-domain check: fixes typos, leaves real domains alone',()=>{
+  const dom=new JSDOM('<!doctype html><body></body>',{runScripts:'outside-only'});
+  dom.window.eval(readFileSync('newsletter-otp.js','utf8'));
+  const fix=dom.window.NewsletterOtp.likelyDomain;
+  for (const [typo,want] of [['gmail.it','gmail.com'],['gmial.com','gmail.com'],['gmal.com','gmail.com'],['gmail.con','gmail.com'],['hotmial.it','hotmail.it'],['libero.com','libero.it'],['libbero.it','libero.it'],['yaho.it','yahoo.it'],['virgillio.it','virgilio.it']])
+    assert.equal(fix(typo),want,typo);
+  for (const ok of ['gmail.com','hotmail.com','hotmail.it','libero.it','h2collection.it','unipa.it','company.co.uk','gmail'])
+    assert.equal(fix(ok),null,ok);
+  dom.window.close();
+});
 for (const popup of [false,true]) {
-  test(`${popup?'popup':'newsletter page'}: domain buttons complete the email; Altro adds the @`,()=>{
+  test(`${popup?'popup':'newsletter page'}: one email field with domain suggestions and a typo hint`,()=>{
     const dom=new JSDOM(readFileSync(popup?'index.html':'newsletter.html','utf8'),{runScripts:'outside-only',url:`https://test.local/${popup?'index':'newsletter'}.html`});
     const w=dom.window;
     w.setInterval=()=>0; w.clearInterval=()=>{};
@@ -183,16 +163,26 @@ for (const popup of [false,true]) {
     w.eval(readFileSync('script.js','utf8'));
     if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
     const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
+    assert.equal(form.elements.email_confirm,undefined);
+    assert.equal(form.querySelector('.otp-email-domains'),null);
     const email=form.elements.email||form.elements.EMAIL;
-    const buttons=[...form.querySelectorAll('.otp-email-domains button')];
-    assert.deepEqual(buttons.map(b=>b.textContent),['@gmail.com','@libero.it','@hotmail.it','@virgilio.it','@yahoo.it','Altro']);
-    assert.ok(buttons.every(b=>b.type==='button'));
-    const click=text=>buttons.find(b=>b.textContent===text).click();
-    email.value='mario.rossi'; click('@gmail.com'); assert.equal(email.value,'mario.rossi@gmail.com');
-    email.value='mario.rossi@gmial.com'; click('@libero.it'); assert.equal(email.value,'mario.rossi@libero.it');
-    click('Altro'); assert.equal(email.value,'mario.rossi@');
-    assert.equal(form.elements.email_confirm.value,'');
-    assert.equal(form.elements.email_confirm.validationMessage,'Le email non coincidono.');
+    assert.equal(email.type,'email'); assert.equal(email.getAttribute('autocomplete'),'email');
+    const list=w.document.getElementById(email.getAttribute('list'));
+    const hint=form.querySelector('.otp-email-hint');
+    const type=v=>{email.value=v; email.dispatchEvent(new w.Event('input',{bubbles:true}));};
+    const options=()=>[...list.options].map(o=>o.value);
+    type('mario.rossi');
+    assert.deepEqual(options(),['mario.rossi@gmail.com','mario.rossi@libero.it','mario.rossi@hotmail.it','mario.rossi@virgilio.it','mario.rossi@yahoo.it']);
+    type('mario.rossi@li');
+    assert.deepEqual(options(),['mario.rossi@libero.it','mario.rossi@live.it']);
+    assert.equal(hint.hidden,true);
+    type('mario.rossi@gmail.com'); assert.deepEqual(options(),[]); assert.equal(hint.hidden,true);
+    type('mario.rossi@gmail.it');
+    assert.equal(hint.hidden,false); assert.match(hint.textContent,/Forse intendevi mario.rossi@gmail.com\?/);
+    hint.querySelector('button').click();
+    assert.equal(email.value,'mario.rossi@gmail.com'); assert.equal(hint.hidden,true);
+    type('mario <b>@gmial.com');
+    assert.equal(list.options.length,0); assert.equal(hint.querySelector('b'),null);
     dom.window.close();
   });
 }
