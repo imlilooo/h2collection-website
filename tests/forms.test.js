@@ -150,13 +150,13 @@ test('closed prefix dropdown shows only flag and prefix; the open list keeps cou
   w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
   const s=w.document.querySelector('#sib-form select[name=phone_prefix]');
   const selectedText=()=>s.options[s.selectedIndex].text;
-  assert.equal(selectedText(),'🇮🇹 +39');
+  assert.equal(selectedText(),'🇮🇹\u00a0+39');
   assert.match(s.options[2].text,/ · Afghanistan$/);
   s.dispatchEvent(new w.Event('focus'));
   assert.equal(selectedText(),'🇮🇹 +39 · Italia');
   const gb=[...s.options].findIndex(o=>o.dataset.country==='GB');
   s.selectedIndex=gb; s.dispatchEvent(new w.Event('change',{bubbles:true}));
-  assert.equal(selectedText(),'🇬🇧 +44');
+  assert.equal(selectedText(),'🇬🇧\u00a0+44');
   assert.equal(s.options[0].text,'🇮🇹 +39 · Italia');
   assert.equal(s.value,'44');
   dom.window.close();
