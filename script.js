@@ -82,7 +82,7 @@ mobileMenu.querySelectorAll('a').forEach(link => {
         <button class="nlp-close" aria-label="Chiudi">&times;</button>
         <p class="nlp-eyebrow">Grazie</p>
         <h2 class="nlp-title">Benvenuta nel mondo<br><em>H2 Collection</em></h2>
-        <p class="nlp-note">Controlla la tua email: il tuo buono da 10€ è in arrivo.</p>`;
+        <p class="nlp-note">Controlla la tua email: il tuo buono da 10€ arriverà entro qualche minuto. Se non lo trovi, controlla anche nella cartella spam / posta indesiderata.</p>`;
       wrap.querySelector('.nlp-close').addEventListener('click', close);
   });
 
