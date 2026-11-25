@@ -132,3 +132,43 @@ for (const popup of [false,true]) {
     dom.window.close();
   });
 }
+
+test('phone prefix list matches libphonenumber and Italy +39 is first and selected',()=>{
+  const { getCountries, getCountryCallingCode } = require('libphonenumber-js/max');
+  const dom=new JSDOM(readFileSync('newsletter.html','utf8'),{runScripts:'outside-only',url:'https://test.local/newsletter.html'});
+  dom.window.eval(readFileSync('newsletter-otp.js','utf8'));
+  assert.equal(dom.window.NewsletterOtp.PREFIXES, getCountries().map(c=>c+getCountryCallingCode(c)).join(','));
+  dom.window.NewsletterOtp.attach(dom.window.document.querySelector('#sib-form'),()=>{});
+  const select=dom.window.document.querySelector('#sib-form select[name=phone_prefix]');
+  assert.equal(select.value,'39'); assert.equal(select.options[0].dataset.country,'IT'); assert.equal(select.selectedIndex,0);
+  assert.ok(select.options.length>240);
+  dom.window.close();
+});
+for (const popup of [false,true]) {
+  test(`${popup?'popup':'newsletter page'}: prefix dropdown + number are sent as one international number`,async()=>{
+    const dom=new JSDOM(readFileSync(popup?'index.html':'newsletter.html','utf8'),{runScripts:'outside-only',url:`https://test.local/${popup?'index':'newsletter'}.html`});
+    const w=dom.window, calls=[];
+    w.setInterval=()=>0; w.clearInterval=()=>{};
+    w.fetch=async (url,options)=>{
+      if(options.method==='GET') return {ok:true,json:async()=>({turnstileSiteKey:null})};
+      calls.push(JSON.parse(options.body));
+      return {ok:false,json:async()=>({error:'stop'})};
+    };
+    w.eval(readFileSync('newsletter-otp.js','utf8'));
+    w.eval(readFileSync('script.js','utf8'));
+    if(!popup) w.NewsletterOtp.attach(w.document.querySelector('#sib-form'),()=>{});
+    const form=w.document.querySelector(popup?'.nlp-form':'#sib-form');
+    const set=(name,value)=>{(form.elements[name]||form.elements[name.toUpperCase()]).value=value;};
+    set('nome','Ada');set('cognome','Rossi');set('email','test@example.com');set('email_confirm','test@example.com');set('compleanno','01-01-1990');set('citta','Palermo');form.querySelector('[type=checkbox]').checked=true;
+    const submit=async()=>{form.dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(r=>setTimeout(r,10));};
+    set('phone','333 123 4567'); await submit();
+    assert.equal(calls.at(-1).phone,'+393331234567');
+    form.elements.phone_prefix.value='44'; set('phone','20 7946 0018'); await submit();
+    assert.equal(calls.at(-1).phone,'+442079460018');
+    set('phone','0033 1 42 34 56 78'); await submit();
+    assert.equal(calls.at(-1).phone,'+33142345678');
+    form.reset();
+    assert.equal(form.elements.phone_prefix.value,'39'); assert.equal(form.elements.phone.value,'');
+    dom.window.close();
+  });
+}

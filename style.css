@@ -1259,3 +1259,7 @@ body.nlp-lock { overflow: hidden; }
 .otp-message { font-size: .85rem; line-height: 1.5; margin: .75rem 0; }
 .otp-panel input:focus-visible, .otp-actions button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 .otp-turnstile:not(:empty) { margin: .75rem 0; }
+/* Phone prefix dropdown beside the number (newsletter page and popup). */
+.otp-phone .otp-phone-row { display: flex; gap: .5rem; align-items: stretch; }
+.otp-phone .otp-phone-row select { flex: 0 0 8.5rem; width: 8.5rem; min-width: 0; }
+.otp-phone .otp-phone-row input { flex: 1 1 auto; width: auto; min-width: 0; }
